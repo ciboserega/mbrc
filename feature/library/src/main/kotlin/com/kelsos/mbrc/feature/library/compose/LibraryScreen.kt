@@ -95,7 +95,8 @@ fun LibraryScreen(
         isSearchActive = false
         searchQuery = ""
         viewModel.search("")
-      }
+      },
+      autoFocus = true
     )
 
     syncProgress.running -> {

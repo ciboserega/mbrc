@@ -27,11 +27,15 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -92,7 +96,8 @@ fun ScaffoldTopBar(
       placeholder = state.placeholder,
       onQueryChange = state.onQueryChange,
       onSearch = state.onSearch,
-      onClose = state.onClose
+      onClose = state.onClose,
+      autoFocus = state.autoFocus
     )
 
     is TopBarState.WithProgress -> ProgressTopBar(
@@ -160,9 +165,22 @@ private fun SearchTopBar(
   placeholder: String,
   onQueryChange: (String) -> Unit,
   onSearch: () -> Unit,
-  onClose: () -> Unit
+  onClose: () -> Unit,
+  autoFocus: Boolean
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
+  val focusRequester = remember { FocusRequester() }
+
+  // Request focus only when search opens. Do not reopen the keyboard after the
+  // user intentionally dismisses it while the same search field remains visible.
+  LaunchedEffect(autoFocus) {
+    if (autoFocus) {
+      focusRequester.requestFocus()
+      // Allow Android to finish activating the focused input before showing IME.
+      withFrameNanos { }
+      keyboardController?.show()
+    }
+  }
 
   TopAppBar(
     title = {
@@ -184,7 +202,9 @@ private fun SearchTopBar(
           focusedIndicatorColor = Color.Transparent,
           unfocusedIndicatorColor = Color.Transparent
         ),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+          .focusRequester(focusRequester)
+          .fillMaxWidth()
       )
     },
     navigationIcon = {

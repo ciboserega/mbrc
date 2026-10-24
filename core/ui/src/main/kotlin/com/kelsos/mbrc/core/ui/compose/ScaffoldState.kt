@@ -25,7 +25,8 @@ sealed interface TopBarState {
     val placeholder: String,
     val onQueryChange: (String) -> Unit,
     val onSearch: () -> Unit,
-    val onClose: () -> Unit
+    val onClose: () -> Unit,
+    val autoFocus: Boolean = false
   ) : TopBarState
 
   /**
