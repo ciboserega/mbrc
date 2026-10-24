@@ -79,7 +79,8 @@ fun TracksTab(
     TrackListItem(
       track = track,
       onClick = { viewModel.queue(Queue.Default, track) },
-      onQueue = { queue -> viewModel.queue(queue, track) }
+      onQueue = { queue -> viewModel.queue(queue, track) },
+      titleOnly = true
     )
   }
 
