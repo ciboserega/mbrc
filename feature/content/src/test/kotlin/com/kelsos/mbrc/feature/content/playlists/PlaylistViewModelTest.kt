@@ -14,7 +14,6 @@ import com.kelsos.mbrc.core.networking.protocol.base.Protocol
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import java.io.IOException
@@ -204,59 +203,6 @@ class PlaylistViewModelTest : KoinTest {
 
       // Verify repository was called
       coVerify(exactly = 1) { playlistRepository.getRemote() }
-    }
-  }
-
-  @Test
-  fun browseShouldQueuePlaylistPausePlaybackAndSignalNavigation() {
-    runTest(testDispatcher) {
-      val playlistPath = "playlist/favorites"
-      coEvery { connectionStateFlow.isConnected } returns true
-      coEvery { userActionUseCase.perform(any()) } returns Unit
-
-      viewModel.events.test {
-        viewModel.actions.browse(playlistPath)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        assertThat(awaitItem()).isEqualTo(PlaylistUiMessages.BrowseReady)
-        expectNoEvents()
-      }
-
-      coVerifyOrder {
-        userActionUseCase.perform(UserAction.create(Protocol.PlaylistPlay, playlistPath))
-        userActionUseCase.perform(UserAction.create(Protocol.PlayerPause))
-      }
-    }
-  }
-
-  @Test
-  fun browseShouldNotNavigateWhenDisconnected() {
-    runTest(testDispatcher) {
-      coEvery { connectionStateFlow.isConnected } returns false
-
-      viewModel.events.test {
-        viewModel.actions.browse("playlist/test")
-        testDispatcher.scheduler.advanceUntilIdle()
-        assertThat(awaitItem()).isEqualTo(PlaylistUiMessages.NetworkUnavailable)
-        expectNoEvents()
-      }
-
-      coVerify(exactly = 0) { userActionUseCase.perform(any()) }
-    }
-  }
-
-  @Test
-  fun browseShouldNotNavigateOnTransportError() {
-    runTest(testDispatcher) {
-      coEvery { connectionStateFlow.isConnected } returns true
-      coEvery { userActionUseCase.perform(any()) } throws IOException("Network error")
-
-      viewModel.events.test {
-        viewModel.actions.browse("playlist/test")
-        testDispatcher.scheduler.advanceUntilIdle()
-        assertThat(awaitItem()).isEqualTo(PlaylistUiMessages.PlayFailed)
-        expectNoEvents()
-      }
     }
   }
 

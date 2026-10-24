@@ -102,18 +102,13 @@ fun PlaylistScreen(
 
         is PlaylistUiMessages.PlayFailed -> playFailedMessage
 
-        PlaylistUiMessages.BrowseReady -> {
-          onNavigateToQueue()
-          null
-        }
+
       }
 
-      if (message != null) {
-        snackbarHostState.showSnackbar(
-          message = message,
-          duration = SnackbarDuration.Short
-        )
-      }
+      snackbarHostState.showSnackbar(
+        message = message,
+        duration = SnackbarDuration.Short
+      )
     }
   }
 
@@ -143,7 +138,9 @@ fun PlaylistScreen(
         BrowserItemRow(
           item = item,
           onFolderClick = { viewModel.actions.navigateToFolder(it) },
-          onPlaylistClick = { viewModel.actions.browse(it) },
+          // The title opens the current queue without issuing PlaylistPlay.
+          // Protocol v4 cannot read a playlist's contents without playing it.
+          onPlaylistClick = { onNavigateToQueue() },
           onPlaylistPlay = { viewModel.actions.play(it) }
         )
       }

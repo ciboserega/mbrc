@@ -10,7 +10,6 @@ import com.kelsos.mbrc.core.data.playlist.PlaylistRepository
 import com.kelsos.mbrc.core.networking.protocol.base.Protocol
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
 import com.kelsos.mbrc.core.networking.protocol.usecases.performUserAction
-import com.kelsos.mbrc.core.networking.protocol.usecases.pause
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,14 +28,10 @@ sealed class PlaylistUiMessages : UiMessageBase {
   data object NetworkUnavailable : PlaylistUiMessages()
 
   data object PlayFailed : PlaylistUiMessages()
-
-  /** The playlist was requested and playback paused; the queue can now be opened. */
-  data object BrowseReady : PlaylistUiMessages()
 }
 
 interface IPlaylistActions {
   fun play(url: String)
-  fun browse(url: String)
   fun reload()
   fun reload(showUserMessage: Boolean)
   fun navigateToFolder(path: String)
@@ -68,30 +63,6 @@ class PlaylistActions(
           }
         }
       emit(result)
-    }
-  }
-
-  /**
-   * Protocol v4 has no playlist-contents query. The only available way to
-   * populate Now Playing from a saved playlist is PlaylistPlay. Follow it with
-   * an explicit Pause and offer the existing queue so the user chooses the
-   * track they actually want. The server may briefly play the first track
-   * before the pause is processed; this is not a read-only playlist preview.
-   */
-  override fun browse(url: String) {
-    scope.launch(dispatchers.network) {
-      if (!connectionStateFlow.isConnected) {
-        emit(PlaylistUiMessages.NetworkUnavailable)
-        return@launch
-      }
-      try {
-        userActionUseCase.performUserAction(Protocol.PlaylistPlay, url)
-        userActionUseCase.pause()
-        emit(PlaylistUiMessages.BrowseReady)
-      } catch (e: IOException) {
-        Timber.e(e)
-        emit(PlaylistUiMessages.PlayFailed)
-      }
     }
   }
 
