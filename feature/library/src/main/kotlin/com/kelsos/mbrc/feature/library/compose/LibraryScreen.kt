@@ -306,7 +306,8 @@ private fun LibraryContent(
 
     MiniControl(
       onNavigateToPlayer = onNavigateToPlayer,
-      snackbarHostState = snackbarHostState
+      snackbarHostState = snackbarHostState,
+      showCover = false
     )
   }
 }

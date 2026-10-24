@@ -287,7 +287,6 @@ fun TrackListItem(
           overflow = TextOverflow.Clip
         )
       },
-      leadingContent = leading,
       trailingContent = trailing,
       modifier = modifier.combinedClickable(
         onClick = onClick,

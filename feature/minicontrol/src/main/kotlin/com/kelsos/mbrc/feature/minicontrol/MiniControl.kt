@@ -54,6 +54,7 @@ fun MiniControl(
   onNavigateToPlayer: () -> Unit,
   snackbarHostState: SnackbarHostState,
   modifier: Modifier = Modifier,
+  showCover: Boolean = true,
   viewModel: MiniControlViewModel = koinViewModel()
 ) {
   val state by viewModel.state.collectAsStateWithLifecycle(initialValue = MiniControlState())
@@ -77,7 +78,8 @@ fun MiniControl(
     onPlayPauseClick = { viewModel.perform(MiniControlAction.PlayPause) },
     onPlayPauseLongClick = { viewModel.perform(MiniControlAction.Stop) },
     onNextClick = { viewModel.perform(MiniControlAction.PlayNext) },
-    modifier = modifier
+    modifier = modifier,
+    showCover = showCover
   )
 }
 
@@ -89,7 +91,8 @@ fun MiniControlContent(
   onPlayPauseClick: () -> Unit,
   onPlayPauseLongClick: () -> Unit,
   onNextClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  showCover: Boolean = true
 ) {
   val isStream = state.playingPosition.isStream
   val progress = if (!isStream && state.playingPosition.total > 0) {
@@ -133,18 +136,20 @@ fun MiniControlContent(
           .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        AsyncImage(
-          model = state.playingTrack.coverUrl.ifEmpty { null },
-          contentDescription = stringResource(R.string.description_album_cover),
-          modifier = Modifier
-            .size(48.dp)
-            .clip(RoundedCornerShape(4.dp)),
-          contentScale = ContentScale.Crop,
-          placeholder = painterResource(CoreUiR.drawable.ic_image_no_cover),
-          error = painterResource(CoreUiR.drawable.ic_image_no_cover)
-        )
+        if (showCover) {
+          AsyncImage(
+            model = state.playingTrack.coverUrl.ifEmpty { null },
+            contentDescription = stringResource(R.string.description_album_cover),
+            modifier = Modifier
+              .size(48.dp)
+              .clip(RoundedCornerShape(4.dp)),
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(CoreUiR.drawable.ic_image_no_cover),
+            error = painterResource(CoreUiR.drawable.ic_image_no_cover)
+          )
 
-        Spacer(modifier = Modifier.width(12.dp))
+          Spacer(modifier = Modifier.width(12.dp))
+        }
 
         Column(
           modifier = Modifier.weight(1f)
