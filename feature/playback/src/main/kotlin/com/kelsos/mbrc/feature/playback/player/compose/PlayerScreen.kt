@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
@@ -96,6 +97,7 @@ import com.kelsos.mbrc.core.common.state.TrackInfo
 import com.kelsos.mbrc.core.common.state.TrackRating
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.ui.R as CoreUiR
+import com.kelsos.mbrc.core.ui.compose.ActionItem
 import com.kelsos.mbrc.core.ui.compose.DynamicScreenScaffold
 import com.kelsos.mbrc.core.ui.compose.ThinSlider
 import com.kelsos.mbrc.core.ui.compose.TopBarState
@@ -118,6 +120,7 @@ import org.koin.compose.koinInject
 
 @Composable
 fun PlayerScreen(
+  onNavigateToLibrarySearch: () -> Unit,
   onNavigateToNowPlaying: () -> Unit,
   onNavigateToAlbum: (album: String, artist: String) -> Unit,
   onNavigateToArtist: (artist: String) -> Unit,
@@ -205,6 +208,13 @@ fun PlayerScreen(
     DynamicScreenScaffold(
       topBarState = TopBarState.WithTitle(title),
       snackbarHostState = snackbarHostState,
+      actionItems = listOf(
+        ActionItem(
+          icon = Icons.Default.Search,
+          contentDescription = stringResource(R.string.player_search_library),
+          onClick = onNavigateToLibrarySearch
+        )
+      ),
       defaultTitle = title,
       onOpenDrawer = onOpenDrawer,
       onOverflowClick = onOverflowClick,

@@ -38,6 +38,7 @@
   </plurals>
   <string name="menu_remove_track">Remove track</string>
   <string name="nav_now_playing">Now playing</string>
+  <string name="player_search_library">Search tracks in library</string>
   <string name="nav_queue">Queue</string>
   <string name="now_playing__drag_handle">Drag to reorder</string>
   <string name="now_playing__empty_list">Your queue is empty</string>

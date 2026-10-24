@@ -5,6 +5,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -48,6 +49,9 @@ fun AppNavGraph(
     // Main screens accessible from drawer
     composable(Screen.Home.route) { entry ->
       PlayerScreen(
+        onNavigateToLibrarySearch = {
+          navController.navigateFrom(entry, Screen.LibrarySearch.route)
+        },
         onNavigateToNowPlaying = {
           navController.navigateFrom(entry, Screen.NowPlayingList.route)
         },
@@ -66,30 +70,24 @@ fun AppNavGraph(
     }
 
     composable(Screen.Library.route) { entry ->
-      LibraryScreen(
+      LibraryDestination(
+        navController = navController,
+        entry = entry,
+        snackbarHostState = snackbarHostState,
         onOpenDrawer = onOpenDrawer,
-        onNavigateToGenreArtists = { genre ->
-          val encodedName = Uri.encode(genre.genre)
-          navController.navigateFrom(entry, "genre_artists/${genre.id}/$encodedName")
-        },
-        onNavigateToGenreAlbums = { genre ->
-          val encodedName = Uri.encode(genre.genre)
-          navController.navigateFrom(entry, "genre_albums/${genre.id}/$encodedName")
-        },
-        onNavigateToArtistAlbums = { artist ->
-          val encodedName = Uri.encode(artist.artist)
-          navController.navigateFrom(entry, "artist_albums/${artist.id}/$encodedName")
-        },
-        onNavigateToAlbumTracks = { album ->
-          val encodedAlbum = Uri.encode(album.album)
-          val encodedArtist = Uri.encode(album.artist)
-          navController.navigateFrom(
-            entry,
-            "album_tracks/${album.id}/$encodedAlbum/$encodedArtist"
-          )
-        },
-        onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
-        snackbarHostState = snackbarHostState
+        startSearchActive = false
+      )
+    }
+
+    // The magnifier on the player enters the same track library in search mode,
+    // preserving the existing title-only filters and keyboard behaviour.
+    composable(Screen.LibrarySearch.route) { entry ->
+      LibraryDestination(
+        navController = navController,
+        entry = entry,
+        snackbarHostState = snackbarHostState,
+        onOpenDrawer = onOpenDrawer,
+        startSearchActive = true
       )
     }
 
@@ -265,6 +263,46 @@ fun AppNavGraph(
 }
 
 /**
+ * Shared library destination for the drawer and the player's search shortcut.
+ * Both routes display the exact same tracks and use the same library search logic.
+ */
+@Composable
+private fun LibraryDestination(
+  navController: NavHostController,
+  entry: NavBackStackEntry,
+  snackbarHostState: SnackbarHostState,
+  onOpenDrawer: () -> Unit,
+  startSearchActive: Boolean
+) {
+  LibraryScreen(
+    initialSearchActive = startSearchActive,
+    onOpenDrawer = onOpenDrawer,
+    onNavigateToGenreArtists = { genre ->
+      val encodedName = Uri.encode(genre.genre)
+      navController.navigateFrom(entry, "genre_artists/${genre.id}/$encodedName")
+    },
+    onNavigateToGenreAlbums = { genre ->
+      val encodedName = Uri.encode(genre.genre)
+      navController.navigateFrom(entry, "genre_albums/${genre.id}/$encodedName")
+    },
+    onNavigateToArtistAlbums = { artist ->
+      val encodedName = Uri.encode(artist.artist)
+      navController.navigateFrom(entry, "artist_albums/${artist.id}/$encodedName")
+    },
+    onNavigateToAlbumTracks = { album ->
+      val encodedAlbum = Uri.encode(album.album)
+      val encodedArtist = Uri.encode(album.artist)
+      navController.navigateFrom(
+        entry,
+        "album_tracks/${album.id}/$encodedAlbum/$encodedArtist"
+      )
+    },
+    onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
+    snackbarHostState = snackbarHostState
+  )
+}
+
+/**
  * Type-safe navigation destinations using sealed classes.
  * This ensures compile-time safety for navigation and makes refactoring easier.
  */
@@ -272,6 +310,7 @@ sealed class Screen(val route: String) {
   // Main screens (drawer items)
   data object Home : Screen("home")
   data object Library : Screen("library")
+  data object LibrarySearch : Screen("library_search")
   data object Playlists : Screen("playlists")
   data object Radio : Screen("radio")
   data object Settings : Screen("settings")

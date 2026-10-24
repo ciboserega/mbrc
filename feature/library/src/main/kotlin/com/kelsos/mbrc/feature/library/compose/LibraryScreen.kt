@@ -59,9 +59,10 @@ fun LibraryScreen(
   snackbarHostState: SnackbarHostState,
   modifier: Modifier = Modifier,
   viewModel: LibraryViewModel = koinViewModel(),
-  albumViewModel: BrowseAlbumViewModel = koinViewModel()
+  albumViewModel: BrowseAlbumViewModel = koinViewModel(),
+  initialSearchActive: Boolean = false
 ) {
-  var isSearchActive by rememberSaveable { mutableStateOf(false) }
+  var isSearchActive by rememberSaveable { mutableStateOf(initialSearchActive) }
   var searchQuery by rememberSaveable { mutableStateOf("") }
   var statsToShow by remember { mutableStateOf<LibraryStats?>(null) }
   var showSortSheet by rememberSaveable { mutableStateOf(false) }
