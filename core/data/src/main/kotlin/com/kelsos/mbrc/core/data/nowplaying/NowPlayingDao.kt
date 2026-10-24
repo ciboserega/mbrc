@@ -68,7 +68,7 @@ interface NowPlayingDao {
     """
       select * from now_playing
       where title like '%' || :term || '%'
-      or artist like '%' || :term || '%'
+      order by position
       """
   )
   fun search(term: String): PagingSource<Int, NowPlayingEntity>
@@ -77,7 +77,7 @@ interface NowPlayingDao {
     """
       select * from now_playing
       where title like '%' || :term || '%'
-      or artist like '%' || :term || '%'
+      order by position
       """
   )
   fun simpleSearch(term: String): List<NowPlayingEntity>
@@ -144,7 +144,8 @@ interface NowPlayingDao {
     """
         select position from now_playing
         where title like '%' || :query || '%'
-        or artist like '%' || :query || '%'
+        order by position
+        limit 1
         """
   )
   fun findPositionByQuery(query: String): Int?
@@ -173,7 +174,7 @@ interface NowPlayingDao {
     """
         select position, title from now_playing
         where title like '%' || :query || '%'
-        or artist like '%' || :query || '%'
+        order by position
         limit 1
         """
   )

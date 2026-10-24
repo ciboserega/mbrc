@@ -6,12 +6,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.paging.LoadState
@@ -51,6 +54,73 @@ class NowPlayingScreenTest {
     // PullToRefreshBox requires its child to be vertically scrollable to detect
     // the pull gesture; without it the empty state never triggers refresh.
     composeTestRule.onNode(hasScrollAction()).assertExists()
+  }
+
+  @Test
+  fun `clicking a filtered result plays its original queue position`() {
+    var playedPosition: Int? = null
+    composeTestRule.setContent {
+      TestNowPlayingContent(
+        tracks = filteredQueue.collectAsLazyPagingItems(),
+        trackCount = 20,
+        isConnected = true,
+        isFiltering = true,
+        onTrackClick = { playedPosition = it }
+      )
+    }
+
+    composeTestRule.onNodeWithText("Second match").performClick()
+
+    assertThat(playedPosition).isEqualTo(8)
+  }
+
+  @Test
+  fun `removing a filtered result removes its original queue position`() {
+    var removedPosition: Int? = null
+    composeTestRule.setContent {
+      TestNowPlayingContent(
+        tracks = filteredQueue.collectAsLazyPagingItems(),
+        trackCount = 20,
+        isConnected = true,
+        isFiltering = true,
+        onTrackRemove = { removedPosition = it }
+      )
+    }
+
+    composeTestRule.onAllNodesWithContentDescription("More options")[1].performClick()
+    composeTestRule.onNodeWithText("Remove track").performClick()
+
+    // Removal uses the protocol's zero-based position, not the second visible row's index.
+    assertThat(removedPosition).isEqualTo(7)
+  }
+
+  @Test
+  fun `dragging filtered results reorders the original queue positions`() {
+    val moves = mutableListOf<Pair<Int, Int>>()
+    composeTestRule.setContent {
+      TestNowPlayingContent(
+        tracks = filteredQueue.collectAsLazyPagingItems(),
+        trackCount = 20,
+        isConnected = true,
+        isFiltering = true,
+        onTrackMove = { from, to -> moves += from to to }
+      )
+    }
+
+    val handles = composeTestRule.onAllNodesWithContentDescription(
+      "Drag to reorder",
+      useUnmergedTree = true
+    )
+    val positions = handles.fetchSemanticsNodes().map { it.boundsInRoot.center.y }
+    handles[0].performTouchInput {
+      down(center)
+      advanceEventTime(600)
+      moveBy(Offset(0f, positions[1] - positions[0]), delayMillis = 100)
+      up()
+    }
+    composeTestRule.waitForIdle()
+
+    assertThat(moves).contains(2 to 7)
   }
 
   @Test
@@ -150,6 +220,43 @@ class NowPlayingScreenTest {
     }
     // Two tracks of context are kept above the playing one.
     assertThat(listState.firstVisibleItemIndex).isEqualTo(playingIndex - 2)
+  }
+
+  @Test
+  fun `clearing a filter does not repeat auto-scroll after the user returned to the top`() {
+    val totalItems = 350
+    val playingIndex = 200
+    val queueState = LazyListState()
+    val searchState = LazyListState()
+    val pager = pagerOf(totalItems)
+    var isFiltering by mutableStateOf(false)
+
+    composeTestRule.setContent {
+      val queue = pager.flow.collectAsLazyPagingItems()
+      val matches = filteredQueue.collectAsLazyPagingItems()
+      TestNowPlayingContent(
+        tracks = if (isFiltering) matches else queue,
+        trackCount = totalItems,
+        isConnected = false,
+        playingTrackIndex = if (isFiltering) null else playingIndex,
+        isFiltering = isFiltering,
+        lazyListState = if (isFiltering) searchState else queueState
+      )
+    }
+
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      queueState.firstVisibleItemIndex == playingIndex - 2
+    }
+    composeTestRule.runOnIdle { queueState.requestScrollToItem(0) }
+    composeTestRule.waitForIdle()
+    assertThat(queueState.firstVisibleItemIndex).isEqualTo(0)
+
+    composeTestRule.runOnIdle { isFiltering = true }
+    composeTestRule.waitForIdle()
+    composeTestRule.runOnIdle { isFiltering = false }
+    composeTestRule.waitForIdle()
+
+    assertThat(queueState.firstVisibleItemIndex).isEqualTo(0)
   }
 
   @Test
@@ -267,6 +374,10 @@ private fun TestNowPlayingContent(
   trackCount: Int,
   isConnected: Boolean,
   playingTrackIndex: Int? = null,
+  isFiltering: Boolean = false,
+  onTrackClick: (Int) -> Unit = {},
+  onTrackRemove: (Int) -> Unit = {},
+  onTrackMove: (Int, Int) -> Unit = { _, _ -> },
   lazyListState: LazyListState = rememberLazyListState()
 ) {
   NowPlayingContent(
@@ -276,13 +387,23 @@ private fun TestNowPlayingContent(
     isRefreshing = false,
     isConnected = isConnected,
     onRefresh = {},
-    onTrackClick = {},
-    onTrackRemove = {},
-    onTrackMove = { _, _ -> },
+    onTrackClick = onTrackClick,
+    onTrackRemove = onTrackRemove,
+    onTrackMove = onTrackMove,
     onDragEnd = {},
     onGoToAlbum = null,
     onGoToArtist = {},
     playingTrackIndex = playingTrackIndex,
+    isFiltering = isFiltering,
     lazyListState = lazyListState
   )
 }
+
+private val filteredQueue = flowOf(
+  PagingData.from(
+    listOf(
+      NowPlaying("First match", "Artist", "/first.mp3", position = 3, id = 3),
+      NowPlaying("Second match", "Artist", "/second.mp3", position = 8, id = 8)
+    )
+  )
+)

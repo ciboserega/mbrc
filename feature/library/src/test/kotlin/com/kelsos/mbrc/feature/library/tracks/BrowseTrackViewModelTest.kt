@@ -1,5 +1,6 @@
 package com.kelsos.mbrc.feature.library.tracks
 
+import androidx.lifecycle.ViewModelStore
 import androidx.paging.PagingData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
@@ -24,9 +25,14 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -83,6 +89,52 @@ class BrowseTrackViewModelTest : KoinTest {
   @After
   fun tearDown() {
     stopKoin()
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun typingTwoLettersShouldSearchAndClearingShouldRestoreTracksWithoutSubmitting() {
+    runTest(testDispatcher) {
+      val liveSearchModel = LibrarySearchModel()
+      every { searchModel.term } returns liveSearchModel.term
+      Dispatchers.setMain(testDispatcher)
+      val store = ViewModelStore()
+      try {
+        store.put("tracks", viewModel)
+        viewModel.tracks.test {
+          awaitItem()
+          verify(exactly = 1) { repository.getAll(TrackSortField.TITLE, SortOrder.ASC) }
+
+          liveSearchModel.setTerm("xy")
+          testScheduler.advanceTimeBy(299)
+          testScheduler.runCurrent()
+          expectNoEvents()
+
+          testScheduler.advanceTimeBy(1)
+          testScheduler.runCurrent()
+          awaitItem()
+          verify(exactly = 1) { repository.search("xy", TrackSortField.TITLE, SortOrder.ASC) }
+
+          liveSearchModel.setTerm("no")
+          testScheduler.advanceTimeBy(300)
+          testScheduler.runCurrent()
+          awaitItem()
+          verify(exactly = 1) { repository.search("no", TrackSortField.TITLE, SortOrder.ASC) }
+
+          liveSearchModel.setTerm("")
+          testScheduler.advanceTimeBy(300)
+          testScheduler.runCurrent()
+          awaitItem()
+          verify(exactly = 2) { repository.getAll(TrackSortField.TITLE, SortOrder.ASC) }
+
+          cancelAndIgnoreRemainingEvents()
+        }
+        coVerify(exactly = 0) { queueHandler.queueTrack(any<Track>(), any<Queue>()) }
+      } finally {
+        store.clear()
+        Dispatchers.resetMain()
+      }
+    }
   }
 
   @Test

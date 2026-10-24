@@ -235,7 +235,7 @@ class TrackRepositoryTest : KoinTest {
   }
 
   @Test
-  fun searchShouldReturnMatchingTracksByArtist() {
+  fun searchShouldExcludeMatchesInArtistOnly() {
     runTest(testDispatcher) {
       val tracks = listOf(
         TrackGenerator(
@@ -259,13 +259,12 @@ class TrackRepositoryTest : KoinTest {
 
       val result = repository.search("Rock").asSnapshot()
 
-      assertThat(result).hasSize(2)
-      assertThat(result.map { it.artist }).containsExactly("Rock Artist", "Another Rock Artist")
+      assertThat(result).isEmpty()
     }
   }
 
   @Test
-  fun searchShouldReturnMatchingTracksByTitleOrArtist() {
+  fun searchShouldReturnTitleMatchesWithoutArtistOnlyMatches() {
     runTest(testDispatcher) {
       val tracks = listOf(
         TrackGenerator(
@@ -293,12 +292,69 @@ class TrackRepositoryTest : KoinTest {
 
       val result = repository.search("Rock").asSnapshot()
 
-      assertThat(result).hasSize(3)
-      assertThat(result.map { it.src }).containsExactly(
-        "/path/to/track1.mp3",
-        "/path/to/track2.mp3",
-        "/path/to/track4.mp3"
+      assertThat(result.map { it.src }).containsExactly("/path/to/track1.mp3")
+    }
+  }
+
+  @Test
+  fun twoLetterSearchShouldMatchAnyTitlePositionAcrossEverySort() {
+    runTest(testDispatcher) {
+      val tracks = TrackGenerator().generateTracks(7) { index, builder ->
+        builder.src = "/track$index.mp3"
+        builder.title = "Unrelated $index"
+        when (index) {
+          1 -> {
+            builder.title = "XY Dawn"
+            builder.artist = "The Zebras"
+            builder.album = "Beta"
+            builder.albumArtist = "The Night"
+          }
+
+          2 -> {
+            builder.title = "Around xY Night"
+            builder.artist = "Alpha"
+            builder.album = "Zulu"
+            builder.albumArtist = "Zulu"
+          }
+
+          3 -> {
+            builder.title = "Afterglow XY"
+            builder.artist = "Middle"
+            builder.album = "Alpha"
+            builder.albumArtist = "Alpha"
+          }
+
+          4 -> builder.artist = "XY"
+          5 -> builder.album = "XY"
+          6 -> builder.albumArtist = "XY"
+          7 -> {
+            builder.genre = "XY"
+            builder.src = "/XY.mp3"
+          }
+        }
+      }
+      dao.insertAll(tracks)
+
+      // The legacy entry point and all sort variants must filter on title alone.
+      assertThat(repository.search("xy").asSnapshot().map { it.src })
+        .containsExactly("/track3.mp3", "/track1.mp3", "/track2.mp3")
+        .inOrder()
+
+      val ascendingPaths = mapOf(
+        TrackSortField.TITLE to listOf("/track3.mp3", "/track2.mp3", "/track1.mp3"),
+        TrackSortField.ARTIST to listOf("/track2.mp3", "/track3.mp3", "/track1.mp3"),
+        TrackSortField.ALBUM to listOf("/track3.mp3", "/track1.mp3", "/track2.mp3"),
+        TrackSortField.ALBUM_ARTIST to listOf("/track3.mp3", "/track1.mp3", "/track2.mp3")
       )
+      for (field in TrackSortField.entries) {
+        for (order in SortOrder.entries) {
+          val expected = ascendingPaths.getValue(field).let {
+            if (order == SortOrder.ASC) it else it.reversed()
+          }
+          val result = repository.search("xy", field, order).asSnapshot()
+          assertThat(result.map { it.src }).containsExactlyElementsIn(expected).inOrder()
+        }
+      }
     }
   }
 
@@ -342,12 +398,7 @@ class TrackRepositoryTest : KoinTest {
 
       val result = repository.search("rock").asSnapshot()
 
-      assertThat(result).hasSize(2)
-      assertThat(
-        result.map {
-          it.src
-        }
-      ).containsExactly("/path/to/track1.mp3", "/path/to/track2.mp3")
+      assertThat(result.map { it.src }).containsExactly("/path/to/track2.mp3")
     }
   }
 
@@ -963,12 +1014,12 @@ class TrackRepositoryTest : KoinTest {
       val tracks = listOf(
         TrackGenerator(
           baseArtist = "The Rock Band",
-          baseTitle = "Track 1",
+          baseTitle = "Rock Track 1",
           basePath = "/path/to"
         ).generateTrack { src = "/path/to/track1.mp3" },
         TrackGenerator(
           baseArtist = "Alpha Rock",
-          baseTitle = "Track 2",
+          baseTitle = "Rock Track 2",
           basePath = "/path/to"
         ).generateTrack { src = "/path/to/track2.mp3" },
         TrackGenerator(
@@ -1053,7 +1104,7 @@ class TrackRepositoryTest : KoinTest {
       val tracks = listOf(
         TrackGenerator(
           baseArtist = "Rock Artist",
-          baseTitle = "Track 1",
+          baseTitle = "Rock Track 1",
           basePath = "/path/to"
         ).generateTrack {
           src = "/path/to/track1.mp3"
@@ -1061,7 +1112,7 @@ class TrackRepositoryTest : KoinTest {
         },
         TrackGenerator(
           baseArtist = "Rock Star",
-          baseTitle = "Track 2",
+          baseTitle = "Rock Track 2",
           basePath = "/path/to"
         ).generateTrack {
           src = "/path/to/track2.mp3"
@@ -1177,7 +1228,7 @@ class TrackRepositoryTest : KoinTest {
       val tracks = listOf(
         TrackGenerator(
           baseArtist = "Rock Artist",
-          baseTitle = "Track 1",
+          baseTitle = "Rock Track 1",
           basePath = "/path/to"
         ).generateTrack {
           src = "/path/to/track1.mp3"
@@ -1185,7 +1236,7 @@ class TrackRepositoryTest : KoinTest {
         },
         TrackGenerator(
           baseArtist = "Rock Star",
-          baseTitle = "Track 2",
+          baseTitle = "Rock Track 2",
           basePath = "/path/to"
         ).generateTrack {
           src = "/path/to/track2.mp3"
