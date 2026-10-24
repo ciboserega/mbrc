@@ -125,7 +125,7 @@ data class PlaylistDetailState(
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaylistViewModel(
   repository: PlaylistRepository,
-  dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers,
   userActionsUseCase: UserActionUseCase,
   private val connectionStateFlow: ConnectionStateFlow,
   private val trackReader: PlaylistTrackReader,
