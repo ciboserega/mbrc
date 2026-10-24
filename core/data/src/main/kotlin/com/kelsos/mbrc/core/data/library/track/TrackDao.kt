@@ -31,7 +31,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
     """
   )
@@ -150,7 +150,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by title collate nocase asc
     """
   )
@@ -159,7 +159,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by title collate nocase desc
     """
   )
@@ -168,7 +168,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by
       CASE
         WHEN LOWER(artist) LIKE 'the %' THEN SUBSTR(artist, 5)
@@ -182,7 +182,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by
       CASE
         WHEN LOWER(artist) LIKE 'the %' THEN SUBSTR(artist, 5)
@@ -196,7 +196,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by album collate nocase asc, disc asc, trackno asc
     """
   )
@@ -205,7 +205,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by album collate nocase desc, disc asc, trackno asc
     """
   )
@@ -241,7 +241,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by
       CASE
         WHEN LOWER(album_artist) LIKE 'the %' THEN SUBSTR(album_artist, 5)
@@ -255,7 +255,7 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || :term || '%' OR artist LIKE '%' || :term || '%'
+    where title LIKE '%' || :term || '%'
     order by
       CASE
         WHEN LOWER(album_artist) LIKE 'the %' THEN SUBSTR(album_artist, 5)

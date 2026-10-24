@@ -112,7 +112,8 @@ fun NowPlayingScreen(
   snackbarHostState: SnackbarHostState,
   viewModel: NowPlayingViewModel = koinViewModel()
 ) {
-  val tracks = viewModel.tracks.collectAsLazyPagingItems()
+  val queue = viewModel.tracks.collectAsLazyPagingItems()
+  val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
   val playingTrack by viewModel.playingTrack.collectAsStateWithLifecycle()
   val playingTrackIndex by viewModel.playingTrackIndex.collectAsStateWithLifecycle()
   val connectionState by viewModel.connectionState.collectAsStateWithLifecycle(
@@ -126,8 +127,17 @@ fun NowPlayingScreen(
   var isSearchActive by rememberSaveable { mutableStateOf(false) }
   var searchQuery by rememberSaveable { mutableStateOf("") }
 
-  val lazyListState = rememberLazyListState()
+  val queueListState = rememberLazyListState()
+  val searchListState = rememberLazyListState()
+  val isFiltering = isSearchActive && searchQuery.isNotBlank()
+  val tracks = if (isFiltering) searchResults else queue
+  val lazyListState = if (isFiltering) searchListState else queueListState
   val scope = rememberCoroutineScope()
+
+  // Also restores the filter when rememberSaveable restores an open search field.
+  LaunchedEffect(searchQuery) {
+    viewModel.filter(searchQuery)
+  }
 
   val searchPlaceholder = stringResource(R.string.now_playing_search_hint)
   val scrollToPlayingLabel = stringResource(R.string.now_playing__scroll_to_playing)
@@ -206,7 +216,7 @@ fun NowPlayingScreen(
       NowPlayingContent(
         tracks = tracks,
         playingTrackPath = playingTrack.path,
-        playingTrackIndex = playingTrackIndex,
+        playingTrackIndex = if (isFiltering) null else playingTrackIndex,
         trackCount = trackCount,
         isRefreshing = isRefreshing,
         isConnected = isConnected,
@@ -221,6 +231,7 @@ fun NowPlayingScreen(
         onGoToAlbum = onNavigateToAlbum,
         onGoToArtist = onNavigateToArtist,
         modifier = Modifier.weight(1f),
+        isFiltering = isFiltering,
         lazyListState = lazyListState
       )
 
@@ -311,13 +322,14 @@ private fun NowPlayingEventsEffect(
 private fun AutoScrollToPlayingTrackEffect(
   lazyListState: LazyListState,
   itemCount: () -> Int,
-  playingTrackIndex: Int?
+  playingTrackIndex: Int?,
+  enabled: Boolean
 ) {
   var hasScrolled by remember { mutableStateOf(false) }
   val currentIndex by rememberUpdatedState(playingTrackIndex)
 
-  LaunchedEffect(lazyListState) {
-    if (hasScrolled) {
+  LaunchedEffect(lazyListState, enabled) {
+    if (hasScrolled || !enabled) {
       return@LaunchedEffect
     }
     val target = withTimeoutOrNull(AUTO_SCROLL_TIMEOUT_MS) {
@@ -379,18 +391,32 @@ internal fun NowPlayingContent(
   onGoToArtist: (artist: String) -> Unit,
   modifier: Modifier = Modifier,
   playingTrackIndex: Int? = null,
+  isFiltering: Boolean = false,
   lazyListState: LazyListState = rememberLazyListState()
 ) {
   val dragDropState = rememberDragDropState(
     lazyListState = lazyListState,
-    onMove = { from, to -> onTrackMove(from, to) },
+    onMove = { from, to ->
+      // A filtered row's list index is unrelated to its position in the full queue.
+      if (isFiltering) {
+        val fromPosition = tracks.peek(from)?.position
+        val toPosition = tracks.peek(to)?.position
+        if (fromPosition != null && toPosition != null) {
+          onTrackMove(fromPosition - 1, toPosition - 1)
+        }
+      } else {
+        onTrackMove(from, to)
+      }
+    },
     onDragEnd = onDragEnd
   )
 
+  // Keep the one-shot flag in composition while filtering, so clearing a search cannot re-arm it.
   AutoScrollToPlayingTrackEffect(
     lazyListState = lazyListState,
     itemCount = { tracks.itemCount },
-    playingTrackIndex = playingTrackIndex
+    playingTrackIndex = playingTrackIndex,
+    enabled = !isFiltering
   )
 
   PullToRefreshBox(
@@ -432,6 +458,7 @@ internal fun NowPlayingContent(
             tracks = tracks,
             playingTrackPath = playingTrackPath,
             isConnected = isConnected,
+            isFiltering = isFiltering,
             onTrackClick = onTrackClick,
             onTrackRemove = onTrackRemove,
             onGoToAlbum = onGoToAlbum,
@@ -479,6 +506,7 @@ private fun NowPlayingTrackList(
   tracks: LazyPagingItems<NowPlaying>,
   playingTrackPath: String,
   isConnected: Boolean,
+  isFiltering: Boolean,
   onTrackClick: (Int) -> Unit,
   onTrackRemove: (Int) -> Unit,
   onGoToAlbum: ((path: String) -> Unit)?,
@@ -546,8 +574,8 @@ private fun NowPlayingTrackList(
             isPlaying = isPlaying,
             isDragging = isDragging,
             dragDropState = dragDropState,
-            onClick = { onTrackClick(srcIdx + 1) },
-            onRemove = { onTrackRemove(srcIdx) },
+            onClick = { onTrackClick(if (isFiltering) track.position else srcIdx + 1) },
+            onRemove = { onTrackRemove(if (isFiltering) track.position - 1 else srcIdx) },
             onGoToAlbum = onGoToAlbum?.let { callback -> { callback(track.path) } },
             onGoToArtist = { onGoToArtist(track.artist) }
           )
@@ -556,7 +584,7 @@ private fun NowPlayingTrackList(
             track = track,
             isPlaying = isPlaying,
             isDragging = false,
-            onClick = { onTrackClick(srcIdx + 1) },
+            onClick = { onTrackClick(if (isFiltering) track.position else srcIdx + 1) },
             onGoToAlbum = onGoToAlbum?.let { callback -> { callback(track.path) } },
             onGoToArtist = { onGoToArtist(track.artist) },
             modifier = Modifier.animateItem()

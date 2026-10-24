@@ -1,6 +1,8 @@
 package com.kelsos.mbrc.feature.playback.nowplaying
 
+import androidx.lifecycle.ViewModelStore
 import androidx.paging.PagingData
+import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
@@ -21,11 +23,16 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -274,6 +281,101 @@ class NowPlayingViewModelTest : KoinTest {
     // Then
     assertThat(viewModel.tracks).isNotNull()
     // Note: PagingData testing requires more setup, this verifies the flow is accessible
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun typingTwoLettersFiltersTheQueueWithoutPlaying() = runTest(testDispatcher) {
+    val match = NowPlaying("Midnight Dreams", "Artist", "/dreams.mp3", position = 8, id = 8)
+    every { repository.search("ig") } returns flowOf(PagingData.from(listOf(match)))
+
+    withSearchViewModel {
+      viewModel.searchResults.test {
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertThat(flowOf(awaitItem()).asSnapshot()).isEmpty()
+
+        viewModel.filter("ig")
+        testDispatcher.scheduler.advanceTimeBy(299)
+        verify(exactly = 0) { repository.search(any()) }
+        testDispatcher.scheduler.advanceTimeBy(1)
+        testDispatcher.scheduler.runCurrent()
+
+        assertThat(flowOf(awaitItem()).asSnapshot()).containsExactly(match)
+        coVerify(exactly = 0) { userActionUseCase.perform(any()) }
+        coVerify(exactly = 0) { repository.searchTrack(any()) }
+        cancelAndIgnoreRemainingEvents()
+      }
+    }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun typingAgainReplacesResultsAndClearingKeepsTheFullQueueAvailable() = runTest(testDispatcher) {
+    val first = NowPlaying("Midnight Dreams", "Artist", "/dreams.mp3", position = 8, id = 8)
+    val second = NowPlaying("Digital Rain", "Artist", "/rain.mp3", position = 15, id = 15)
+    every { repository.getAll() } returns flowOf(PagingData.from(listOf(first, second)))
+    every { repository.search("ig") } returns flowOf(PagingData.from(listOf(first, second)))
+    every { repository.search("igi") } returns flowOf(PagingData.from(listOf(second)))
+
+    withSearchViewModel {
+      viewModel.searchResults.test {
+        testDispatcher.scheduler.advanceUntilIdle()
+        awaitItem()
+
+        viewModel.filter("ig")
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertThat(flowOf(awaitItem()).asSnapshot()).containsExactly(first, second).inOrder()
+
+        viewModel.filter("igi")
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertThat(flowOf(awaitItem()).asSnapshot()).containsExactly(second)
+
+        viewModel.filter("")
+        // The screen switches to this independent flow immediately, before the debounce completes.
+        assertThat(viewModel.tracks.asSnapshot()).containsExactly(first, second).inOrder()
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertThat(flowOf(awaitItem()).asSnapshot()).isEmpty()
+        coVerify(exactly = 0) { userActionUseCase.perform(any()) }
+        cancelAndIgnoreRemainingEvents()
+      }
+    }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun rapidTypingSearchesOnlyTheLatestQuery() = runTest(testDispatcher) {
+    every { repository.search("ig") } returns flowOf(PagingData.empty())
+
+    withSearchViewModel {
+      viewModel.searchResults.test {
+        testDispatcher.scheduler.advanceUntilIdle()
+        awaitItem()
+
+        viewModel.filter("i")
+        testDispatcher.scheduler.advanceTimeBy(150)
+        viewModel.filter("ig")
+        testDispatcher.scheduler.advanceUntilIdle()
+        awaitItem()
+
+        verify(exactly = 0) { repository.search("i") }
+        verify(exactly = 1) { repository.search("ig") }
+        coVerify(exactly = 0) { userActionUseCase.perform(any()) }
+        cancelAndIgnoreRemainingEvents()
+      }
+    }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private suspend fun withSearchViewModel(block: suspend () -> Unit) {
+    Dispatchers.setMain(testDispatcher)
+    val store = ViewModelStore()
+    try {
+      store.put("search", viewModel)
+      block()
+    } finally {
+      store.clear()
+      Dispatchers.resetMain()
+    }
   }
 
   @Test

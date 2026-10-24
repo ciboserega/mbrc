@@ -18,12 +18,16 @@ import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
@@ -163,6 +167,7 @@ class NowPlayingActions(
 }
 
 private const val SUBSCRIPTION_TIMEOUT_MS = 5000L
+private const val SEARCH_DEBOUNCE_MS = 300L
 
 class NowPlayingViewModel(
   repository: NowPlayingRepository,
@@ -174,6 +179,21 @@ class NowPlayingViewModel(
   selfMutationTracker: SelfMutationTracker
 ) : BaseViewModel<NowPlayingUiMessages>() {
   val tracks: Flow<PagingData<NowPlaying>> = repository.getAll().cachedIn(viewModelScope)
+  private val searchQuery = MutableStateFlow("")
+
+  /** Filters the queue without issuing a playback command; submit still uses [actions]. */
+  @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+  val searchResults: Flow<PagingData<NowPlaying>> = searchQuery
+    .debounce(SEARCH_DEBOUNCE_MS)
+    .flatMapLatest { query ->
+      if (query.isBlank()) flowOf(PagingData.empty()) else repository.search(query)
+    }
+    .cachedIn(viewModelScope)
+
+  fun filter(query: String) {
+    searchQuery.value = query
+  }
+
   val playingTrack = appState.playingTrack
   val connectionState = connectionStateFlow.connection
   val syncProgress: StateFlow<SyncProgress?> = repository.syncProgress()

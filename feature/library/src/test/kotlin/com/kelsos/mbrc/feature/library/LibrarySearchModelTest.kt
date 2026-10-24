@@ -9,6 +9,36 @@ import org.junit.Test
 class LibrarySearchModelTest {
 
   @Test
+  fun `two letter input replacement and clearing should emit without submitting`() {
+    runTest {
+      val searchModel = LibrarySearchModel()
+
+      searchModel.term.test {
+        advanceTimeBy(350)
+        assertThat(awaitItem()).isEmpty()
+
+        searchModel.setTerm("x")
+        advanceTimeBy(350)
+        assertThat(awaitItem()).isEqualTo("x")
+
+        searchModel.setTerm("xy")
+        advanceTimeBy(200)
+        expectNoEvents()
+        advanceTimeBy(150)
+        assertThat(awaitItem()).isEqualTo("xy")
+
+        searchModel.setTerm("но")
+        advanceTimeBy(350)
+        assertThat(awaitItem()).isEqualTo("но")
+
+        searchModel.setTerm("")
+        advanceTimeBy(350)
+        assertThat(awaitItem()).isEmpty()
+      }
+    }
+  }
+
+  @Test
   fun `term should debounce rapid emissions`() {
     runTest {
       val searchModel = LibrarySearchModel()
