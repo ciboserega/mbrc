@@ -596,12 +596,8 @@ private fun PortraitPlayerLayout(
         .padding(horizontal = PlayerConstants.CONTENT_PADDING),
       contentAlignment = Alignment.Center
     ) {
-      AlbumCover(
-        painter = painter,
-        modifier = Modifier.size(minOf(maxWidth, maxHeight)),
-        hasLyrics = hasLyrics,
-        onLyricsClick = onLyricsClick
-      )
+      // Reserve the original artwork footprint but draw nothing here.
+      Spacer(modifier = Modifier.size(minOf(maxWidth, maxHeight)))
     }
 
     Spacer(modifier = Modifier.height(24.dp))
@@ -722,13 +718,11 @@ private fun LandscapePlayerLayout(
       modifier = Modifier.weight(1f),
       contentAlignment = Alignment.Center
     ) {
-      AlbumCover(
-        painter = painter,
+      // Preserve the landscape spacing without displaying album artwork.
+      Spacer(
         modifier = Modifier
           .fillMaxHeight(PlayerConstants.LANDSCAPE_ALBUM_HEIGHT_FRACTION)
-          .aspectRatio(1f),
-        hasLyrics = hasLyrics,
-        onLyricsClick = onLyricsClick
+          .aspectRatio(1f)
       )
     }
 
@@ -888,6 +882,10 @@ private fun AlbumCover(
   }
 }
 
+/**
+ * Keep the song title in its original position, reserving the space formerly
+ * used by artist, album and favourite controls so transport controls do not jump.
+ */
 @Composable
 private fun TrackInfoWithFavorite(
   track: TrackInfo,
@@ -897,95 +895,23 @@ private fun TrackInfoWithFavorite(
   onFavoriteClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Row(
-    modifier = modifier,
-    verticalAlignment = Alignment.CenterVertically
+  Column(
+    modifier = modifier
+      .heightIn(min = 76.dp)
+      .clickable(onClick = onTrackClick)
   ) {
-    // Track info - left aligned. The heights are minimums, not fixed: they reserve room so the
-    // rows below do not jump when a field is empty, but a fixed height clips its own text once
-    // the user's font scale grows past it, which overlapped all three lines at large font.
-    Column(
+    Text(
+      text = track.title.ifEmpty { stringResource(R.string.unknown_title) },
+      style = MaterialTheme.typography.titleLarge,
+      fontWeight = FontWeight.Bold,
+      color = MaterialTheme.colorScheme.onSurface,
+      maxLines = 1,
+      softWrap = false,
+      overflow = TextOverflow.Ellipsis,
       modifier = Modifier
-        .weight(1f)
-        .clickable(onClick = onTrackClick)
-    ) {
-      Text(
-        text = track.title.ifEmpty { stringResource(R.string.unknown_title) },
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface,
-        maxLines = 1,
-        softWrap = false,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-          .heightIn(min = 28.dp)
-          .trackTextMarquee()
-      )
-
-      Spacer(modifier = Modifier.height(4.dp))
-
-      Text(
-        text = track.artist.ifEmpty { stringResource(R.string.unknown_artist) },
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        softWrap = false,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-          .heightIn(min = 22.dp)
-          .trackTextMarquee()
-      )
-
-      Spacer(modifier = Modifier.height(2.dp))
-
-      // Album with year - always occupies its line so the rows below stay put
-      val albumText = if (track.album.isNotEmpty()) {
-        if (track.year.isNotEmpty()) {
-          "${track.album} • ${track.year}"
-        } else {
-          track.album
-        }
-      } else {
-        " " // Space to maintain height
-      }
-      Text(
-        text = albumText,
-        style = MaterialTheme.typography.bodyMedium,
-        // onSurfaceVariant is already the muted role; the extra alpha on top of it pushed the
-        // album line close to unreadable on a light background. Size carries the hierarchy.
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        softWrap = false,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-          .heightIn(min = 20.dp)
-          .trackTextMarquee()
-      )
-    }
-
-    // Favorite is the only action left on this row: it is the one people use often, and three
-    // 48dp buttons took 144dp of a 312dp row away from the title. Ban moved to the overflow
-    // sheet, lyrics to the album cover.
-    // Favorite button - disabled for streams (LFM rating not applicable)
-    IconButton(
-      onClick = onFavoriteClick,
-      enabled = !isStream
-    ) {
-      Icon(
-        imageVector = if (isFavorite) {
-          Icons.Default.Favorite
-        } else {
-          Icons.Default.FavoriteBorder
-        },
-        contentDescription = stringResource(R.string.player_lfm_love),
-        tint = when {
-          isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-          isFavorite -> MaterialTheme.colorScheme.primary
-          else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        modifier = Modifier.size(28.dp)
-      )
-    }
+        .heightIn(min = 28.dp)
+        .trackTextMarquee()
+    )
   }
 }
 
