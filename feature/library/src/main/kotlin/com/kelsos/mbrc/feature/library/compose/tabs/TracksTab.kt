@@ -6,6 +6,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,6 +37,7 @@ val trackSortOptions = listOf(
 @Composable
 fun TracksTab(
   snackbarHostState: SnackbarHostState,
+  onNavigateToPlayer: () -> Unit,
   isSyncing: Boolean,
   showSortSheet: Boolean,
   onDismissSortSheet: () -> Unit,
@@ -49,10 +51,14 @@ fun TracksTab(
     initialValue = SortPreference(TrackSortField.TITLE, SortOrder.ASC)
   )
 
-  val queueResults = remember {
+  val currentNavigateToPlayer = rememberUpdatedState(onNavigateToPlayer)
+  val queueResults = remember(viewModel) {
     viewModel.events.map { event ->
       when (event) {
-        is TrackUiMessage.QueueSuccess -> Outcome.Success(event.tracksCount)
+        is TrackUiMessage.QueueSuccess -> {
+          if (event.openPlayer) currentNavigateToPlayer.value()
+          Outcome.Success(event.tracksCount)
+        }
         is TrackUiMessage.QueueFailed -> Outcome.Failure(AppError.OperationFailed)
         is TrackUiMessage.NetworkUnavailable -> Outcome.Failure(AppError.NetworkUnavailable)
       }
@@ -78,7 +84,7 @@ fun TracksTab(
   ) { track ->
     TrackListItem(
       track = track,
-      onClick = { viewModel.queue(Queue.Default, track) },
+      onClick = { viewModel.playAndOpen(track) },
       onQueue = { queue -> viewModel.queue(queue, track) },
       titleOnly = true
     )

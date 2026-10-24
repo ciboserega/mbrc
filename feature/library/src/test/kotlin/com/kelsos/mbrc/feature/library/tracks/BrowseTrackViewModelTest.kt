@@ -207,6 +207,68 @@ class BrowseTrackViewModelTest : KoinTest {
   }
 
   @Test
+  fun directTrackTapShouldPlayNowAndRequestPlayerNavigationOnlyAfterSuccess() {
+    runTest(testDispatcher) {
+      val track = Track(
+        id = 17,
+        artist = "",
+        title = "Test Track",
+        album = "",
+        year = "",
+        genre = "",
+        disc = 1,
+        trackno = 1,
+        src = "/songs/test.mp3",
+        albumArtist = ""
+      )
+      coEvery { connectionStateFlow.isConnected } returns true
+      coEvery { queueHandler.queueTrack(track = track, type = Queue.Now) } returns
+        Outcome.Success(1)
+
+      viewModel.events.test {
+        viewModel.playAndOpen(track)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertThat(awaitItem()).isEqualTo(
+          TrackUiMessage.QueueSuccess(tracksCount = 1, openPlayer = true)
+        )
+        expectNoEvents()
+      }
+
+      coVerify(exactly = 1) { queueHandler.queueTrack(track = track, type = Queue.Now) }
+    }
+  }
+
+  @Test
+  fun failedDirectTrackTapShouldNotRequestPlayerNavigation() {
+    runTest(testDispatcher) {
+      val track = Track(
+        id = 17,
+        artist = "",
+        title = "Test Track",
+        album = "",
+        year = "",
+        genre = "",
+        disc = 1,
+        trackno = 1,
+        src = "/songs/test.mp3",
+        albumArtist = ""
+      )
+      coEvery { connectionStateFlow.isConnected } returns true
+      coEvery { queueHandler.queueTrack(track = track, type = Queue.Now) } returns
+        Outcome.Failure(AppError.OperationFailed)
+
+      viewModel.events.test {
+        viewModel.playAndOpen(track)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertThat(awaitItem()).isEqualTo(TrackUiMessage.QueueFailed)
+        expectNoEvents()
+      }
+    }
+  }
+
+  @Test
   fun queueShouldEmitQueueFailedWhenConnectedButQueueFails() {
     runTest(testDispatcher) {
       // Given

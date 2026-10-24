@@ -18,7 +18,14 @@ abstract class BaseTrackViewModel(
 ) : BaseLibraryViewModel<TrackUiMessage>(librarySettings, connectionStateFlow) {
   abstract val tracks: Flow<PagingData<Track>>
 
-  fun queue(action: Queue, track: Track) {
+  /** A direct track tap plays the selected song, then opens Now playing on success. */
+  fun playAndOpen(track: Track) = queue(Queue.Now, track, openPlayerOnSuccess = true)
+
+  fun queue(
+    action: Queue,
+    track: Track,
+    openPlayerOnSuccess: Boolean = false
+  ) {
     viewModelScope.launch {
       if (!checkConnection()) {
         emit(TrackUiMessage.NetworkUnavailable)
@@ -30,7 +37,10 @@ abstract class BaseTrackViewModel(
 
       val message =
         if (result.isSuccess) {
-          TrackUiMessage.QueueSuccess(result.getOrNull() ?: 0)
+          TrackUiMessage.QueueSuccess(
+            tracksCount = result.getOrNull() ?: 0,
+            openPlayer = openPlayerOnSuccess
+          )
         } else {
           TrackUiMessage.QueueFailed
         }

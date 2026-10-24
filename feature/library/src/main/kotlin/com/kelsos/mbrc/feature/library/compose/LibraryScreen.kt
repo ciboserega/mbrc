@@ -297,6 +297,7 @@ private fun LibraryContent(
   Column(modifier = modifier.fillMaxSize()) {
     TracksTab(
       snackbarHostState = snackbarHostState,
+      onNavigateToPlayer = onNavigateToPlayer,
       isSyncing = isSyncing,
       showSortSheet = showSortSheet,
       onDismissSortSheet = onDismissSortSheet,
