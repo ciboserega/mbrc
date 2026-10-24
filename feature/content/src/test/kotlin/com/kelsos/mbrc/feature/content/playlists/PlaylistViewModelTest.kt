@@ -9,6 +9,9 @@ import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.data.playlist.PlaylistBrowserItem
 import com.kelsos.mbrc.core.data.playlist.PlaylistRepository
+import com.kelsos.mbrc.core.networking.api.QueueApi
+import com.kelsos.mbrc.core.networking.dto.QueuePayload
+import com.kelsos.mbrc.core.networking.dto.QueueResponse
 import com.kelsos.mbrc.core.networking.protocol.actions.UserAction
 import com.kelsos.mbrc.core.networking.protocol.base.Protocol
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
@@ -37,6 +40,8 @@ class PlaylistViewModelTest : KoinTest {
       single<PlaylistRepository> { mockk(relaxed = true) }
       single<UserActionUseCase> { mockk(relaxed = true) }
       single<ConnectionStateFlow> { mockk(relaxed = true) }
+      single<PlaylistTrackReader> { mockk(relaxed = true) }
+      single<QueueApi> { mockk(relaxed = true) }
       singleOf(::PlaylistViewModel)
     }
 
@@ -59,6 +64,50 @@ class PlaylistViewModelTest : KoinTest {
   @After
   fun tearDown() {
     stopKoin()
+  }
+
+  @Test
+  fun openingPlaylistOnlyReadsItsTracksWithoutStartingPlaybackOrTouchingQueue() {
+    runTest(testDispatcher) {
+      val reader: PlaylistTrackReader by inject()
+      val queueApi: QueueApi by inject()
+      coEvery { reader.read("playlist://sample") } returns listOf(
+        PlaylistSong("Second song", "/second.mp3"),
+        PlaylistSong("First song", "/first.mp3")
+      )
+
+      viewModel.openPlaylist("Sample", "playlist://sample")
+      testDispatcher.scheduler.advanceUntilIdle()
+      assertThat(viewModel.detail.value?.tracks?.map { it.title })
+        .containsExactly("Second song", "First song").inOrder()
+      coVerify(exactly = 0) { userActionUseCase.perform(any()) }
+      coVerify(exactly = 0) { queueApi.queue(any()) }
+    }
+  }
+
+  @Test
+  fun selectingPlaylistSongStartsTheSelectedTrackNotTheFirst() {
+    runTest(testDispatcher) {
+      val reader: PlaylistTrackReader by inject()
+      val queueApi: QueueApi by inject()
+      val songs = listOf(
+        PlaylistSong("First song", "/first.mp3"),
+        PlaylistSong("Second song", "/second.mp3")
+      )
+      coEvery { reader.read("playlist://sample") } returns songs
+      coEvery { queueApi.queue(any()) } returns QueueResponse(200)
+      viewModel.openPlaylist("Sample", "playlist://sample")
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      viewModel.events.test {
+        viewModel.playSong(songs[1])
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertThat(awaitItem()).isEqualTo(PlaylistUiMessages.SelectedSongStarted)
+      }
+      coVerify(exactly = 1) {
+        queueApi.queue(QueuePayload("add-all", listOf("/first.mp3", "/second.mp3"), "/second.mp3"))
+      }
+    }
   }
 
   @Test

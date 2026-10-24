@@ -8,6 +8,10 @@
   <string name="playlists_list_empty">No playlists found</string>
   <string name="playlists_load_failed">There was an error while trying to load the playlists.</string>
   <string name="playlists_load_success">Your playlists have been successfully loaded</string>
+  <string name="playlists_v6_required">This MusicBee plugin does not support browsing playlist tracks without playback. Update the MusicBee Remote plugin to a version supporting protocol v6. Nothing has been played or changed in Queue.</string>
+  <string name="playlists_tracks_failed">Couldn't load this playlist's songs. No playback was started.</string>
+  <string name="playlists_try_again">Try again</string>
+  <string name="playlists_no_tracks">No tracks in this playlist</string>
 
   <!-- Radio -->
   <string name="radio__loading_failed">There was an error while loading the radio stations</string>

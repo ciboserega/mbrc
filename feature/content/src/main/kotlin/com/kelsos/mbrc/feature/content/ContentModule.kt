@@ -4,6 +4,9 @@ import com.kelsos.mbrc.core.data.playlist.PlaylistRepository
 import com.kelsos.mbrc.core.data.radio.RadioRepository
 import com.kelsos.mbrc.feature.content.playlists.PlaylistRepositoryImpl
 import com.kelsos.mbrc.feature.content.playlists.PlaylistViewModel
+import com.kelsos.mbrc.feature.content.playlists.PlaylistTrackReader
+import com.kelsos.mbrc.feature.content.playlists.V6PlaylistTrackReader
+import org.koin.android.ext.koin.androidContext
 import com.kelsos.mbrc.feature.content.radio.RadioRepositoryImpl
 import com.kelsos.mbrc.feature.content.radio.RadioViewModel
 import org.koin.core.module.dsl.bind
@@ -26,6 +29,9 @@ import org.koin.dsl.module
 val contentModule = module {
   // Repositories
   singleOf(::PlaylistRepositoryImpl) { bind<PlaylistRepository>() }
+  single<PlaylistTrackReader> {
+    V6PlaylistTrackReader(get(), get(), androidContext(), get())
+  }
   singleOf(::RadioRepositoryImpl) { bind<RadioRepository>() }
 
   // ViewModels

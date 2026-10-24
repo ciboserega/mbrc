@@ -7,7 +7,10 @@ import com.kelsos.mbrc.core.common.mvvm.UiMessageBase
 import com.kelsos.mbrc.core.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.data.playlist.PlaylistRepository
+import com.kelsos.mbrc.core.networking.api.QueueApi
+import com.kelsos.mbrc.core.networking.dto.QueuePayload
 import com.kelsos.mbrc.core.networking.protocol.base.Protocol
+import com.kelsos.mbrc.core.queue.Queue
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
 import com.kelsos.mbrc.core.networking.protocol.usecases.performUserAction
 import java.io.IOException
@@ -28,6 +31,8 @@ sealed class PlaylistUiMessages : UiMessageBase {
   data object NetworkUnavailable : PlaylistUiMessages()
 
   data object PlayFailed : PlaylistUiMessages()
+
+  data object SelectedSongStarted : PlaylistUiMessages()
 }
 
 interface IPlaylistActions {
@@ -107,13 +112,87 @@ class PlaylistActions(
   }
 }
 
+data class PlaylistDetailState(
+  val name: String,
+  val url: String,
+  val loading: Boolean = true,
+  val tracks: List<PlaylistSong> = emptyList(),
+  val unsupported: Boolean = false,
+  val failed: Boolean = false,
+  val playingSelection: Boolean = false
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaylistViewModel(
   repository: PlaylistRepository,
   dispatchers: AppCoroutineDispatchers,
   userActionsUseCase: UserActionUseCase,
-  connectionStateFlow: ConnectionStateFlow
+  private val connectionStateFlow: ConnectionStateFlow,
+  private val trackReader: PlaylistTrackReader,
+  private val queueApi: QueueApi
 ) : BaseViewModel<PlaylistUiMessages>() {
+
+  private val _detail = MutableStateFlow<PlaylistDetailState?>(null)
+  val detail: StateFlow<PlaylistDetailState?> = _detail.asStateFlow()
+  private var browseJob: kotlinx.coroutines.Job? = null
+
+  fun openPlaylist(name: String, url: String) {
+    browseJob?.cancel()
+    _detail.value = PlaylistDetailState(name = name, url = url)
+    browseJob = viewModelScope.launch(dispatchers.network) {
+      try {
+        if (!connectionStateFlow.isConnected) throw IOException("Server disconnected")
+        val result = trackReader.read(url)
+        _detail.value = _detail.value?.takeIf { it.url == url }
+          ?.copy(loading = false, tracks = result)
+      } catch (e: kotlinx.coroutines.CancellationException) {
+        throw e
+      } catch (e: PlaylistBrowseUnsupportedException) {
+        _detail.value = _detail.value?.takeIf { it.url == url }
+          ?.copy(loading = false, unsupported = true)
+      } catch (e: IOException) {
+        Timber.e(e)
+        _detail.value = _detail.value?.takeIf { it.url == url }
+          ?.copy(loading = false, failed = true)
+      }
+    }
+  }
+
+  fun closePlaylist() {
+    browseJob?.cancel()
+    _detail.value = null
+  }
+
+  /** No queue mutation until the user explicitly selects a song. */
+  fun playSong(song: PlaylistSong) {
+    val detail = _detail.value ?: return
+    if (detail.loading || detail.playingSelection || song !in detail.tracks) return
+    _detail.value = detail.copy(playingSelection = true)
+    viewModelScope.launch(dispatchers.network) {
+      try {
+        if (!connectionStateFlow.isConnected) {
+          emit(PlaylistUiMessages.NetworkUnavailable)
+          return@launch
+        }
+        // AddAndPlay replaces the queue with this playlist and starts from
+        // the selected song, not from its first entry.
+        val response = queueApi.queue(
+          QueuePayload(Queue.AddAll.action, detail.tracks.map { it.path }, song.path)
+        )
+        emit(if (response.code == 200) {
+          PlaylistUiMessages.SelectedSongStarted
+        } else {
+          PlaylistUiMessages.PlayFailed
+        })
+      } catch (e: IOException) {
+        Timber.e(e)
+        emit(PlaylistUiMessages.PlayFailed)
+      } finally {
+        _detail.value = _detail.value?.takeIf { it.url == detail.url }
+          ?.copy(playingSelection = false)
+      }
+    }
+  }
 
   private val _currentPath = MutableStateFlow("")
   val currentPath: StateFlow<String> = _currentPath.asStateFlow()

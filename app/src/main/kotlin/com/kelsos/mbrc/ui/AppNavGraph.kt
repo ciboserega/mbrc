@@ -94,7 +94,6 @@ fun AppNavGraph(
     composable(Screen.Playlists.route) { entry ->
       PlaylistScreen(
         onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
-        onNavigateToQueue = { navController.navigateFrom(entry, Screen.NowPlayingList.route) },
         snackbarHostState = snackbarHostState,
         onOpenDrawer = onOpenDrawer
       )

@@ -1,16 +1,24 @@
 package com.kelsos.mbrc.feature.content.playlists.compose
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -20,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,7 +50,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun PlaylistScreen(
   onNavigateToPlayer: () -> Unit,
-  onNavigateToQueue: () -> Unit,
   snackbarHostState: SnackbarHostState,
   onOpenDrawer: () -> Unit,
   modifier: Modifier = Modifier,
@@ -49,6 +57,7 @@ fun PlaylistScreen(
 ) {
   val items = viewModel.items.collectAsLazyPagingItems()
   val currentPath by viewModel.currentPath.collectAsStateWithLifecycle()
+  val detail by viewModel.detail.collectAsStateWithLifecycle()
   var isRefreshing by remember { mutableStateOf(false) }
 
   val refreshFailedMessage = stringResource(R.string.playlists_load_failed)
@@ -59,22 +68,22 @@ fun PlaylistScreen(
   val baseTitle = stringResource(R.string.nav_playlists)
 
   // Dynamic title based on current path
-  val title = if (currentPath.isEmpty()) {
+  val title = detail?.name ?: if (currentPath.isEmpty()) {
     baseTitle
   } else {
     getPathDisplayName(currentPath)
   }
 
   // Navigation icon: back arrow when in folder, drawer when at root
-  val navigationIcon = if (currentPath.isEmpty()) {
-    NavigationIconType.Drawer
-  } else {
-    NavigationIconType.Back { viewModel.actions.navigateUp() }
+  val navigationIcon = when {
+    detail != null -> NavigationIconType.Back { viewModel.closePlaylist() }
+    currentPath.isEmpty() -> NavigationIconType.Drawer
+    else -> NavigationIconType.Back { viewModel.actions.navigateUp() }
   }
 
   // Handle system back navigation
-  BackHandler(enabled = currentPath.isNotEmpty()) {
-    viewModel.actions.navigateUp()
+  BackHandler(enabled = detail != null || currentPath.isNotEmpty()) {
+    if (detail != null) viewModel.closePlaylist() else viewModel.actions.navigateUp()
   }
 
   LaunchedEffect(Unit) {
@@ -102,13 +111,20 @@ fun PlaylistScreen(
 
         is PlaylistUiMessages.PlayFailed -> playFailedMessage
 
+        PlaylistUiMessages.SelectedSongStarted -> {
+          onNavigateToPlayer()
+          null
+        }
+
 
       }
 
-      snackbarHostState.showSnackbar(
-        message = message,
-        duration = SnackbarDuration.Short
-      )
+      if (message != null) {
+        snackbarHostState.showSnackbar(
+          message = message,
+          duration = SnackbarDuration.Short
+        )
+      }
     }
   }
 
@@ -120,6 +136,15 @@ fun PlaylistScreen(
     modifier = modifier
   ) { paddingValues ->
     Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+      val selected = detail
+      if (selected != null) {
+        PlaylistDetailContent(
+          state = selected,
+          onPlay = viewModel::playSong,
+          onRetry = { viewModel.openPlaylist(selected.name, selected.url) },
+          modifier = Modifier.weight(1f)
+        )
+      } else {
       SwipeRefreshScreen(
         items = items,
         listId = "playlists",
@@ -140,15 +165,56 @@ fun PlaylistScreen(
           onFolderClick = { viewModel.actions.navigateToFolder(it) },
           // The title opens the current queue without issuing PlaylistPlay.
           // Protocol v4 cannot read a playlist's contents without playing it.
-          onPlaylistClick = { onNavigateToQueue() },
+          onPlaylistClick = { url ->
+            viewModel.openPlaylist(item.name, url)
+          },
           onPlaylistPlay = { viewModel.actions.play(it) }
         )
       }
 
+      }
       MiniControl(
         onNavigateToPlayer = onNavigateToPlayer,
         snackbarHostState = snackbarHostState
       )
+    }
+  }
+}
+
+
+/**
+ * Displays the selected playlist without touching MusicBee playback or Queue.
+ * Tracks are read separately through the V6 playlist_tracks operation.
+ */
+@Composable
+private fun PlaylistDetailContent(
+  state: com.kelsos.mbrc.feature.content.playlists.PlaylistDetailState,
+  onPlay: (com.kelsos.mbrc.feature.content.playlists.PlaylistSong) -> Unit,
+  onRetry: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    when {
+      state.loading -> CircularProgressIndicator()
+      state.unsupported -> Text(
+        text = stringResource(R.string.playlists_v6_required),
+        modifier = Modifier.padding(24.dp)
+      )
+      state.failed -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = stringResource(R.string.playlists_tracks_failed))
+        TextButton(onClick = onRetry) { Text(stringResource(R.string.playlists_try_again)) }
+      }
+      state.tracks.isEmpty() -> Text(text = stringResource(R.string.playlists_no_tracks))
+      else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
+        itemsIndexed(state.tracks, key = { index, _ -> index }) { _, song ->
+          ListItem(
+            headlineContent = {
+              Text(text = song.title, maxLines = Int.MAX_VALUE, softWrap = true)
+            },
+            modifier = Modifier.clickable(enabled = !state.playingSelection) { onPlay(song) }
+          )
+        }
+      }
     }
   }
 }
