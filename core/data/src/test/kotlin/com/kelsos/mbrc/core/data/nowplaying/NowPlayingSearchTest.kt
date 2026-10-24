@@ -75,6 +75,19 @@ class NowPlayingSearchTest {
   }
 
   @Test
+  fun wordFragmentsCanSkipIntermediateWordsInAllQueueQueries() = runTest {
+    dao.insertAll(
+      listOf(NowPlayingEntity(title = "SIMPLY THE BEST", path = "/music/best.mp3", position = 60))
+    )
+
+    assertThat(loadSearch("SIMPLY BEST").map { it.title }).containsExactly("SIMPLY THE BEST")
+    assertThat(dao.simpleSearch("sim be").map { it.title }).containsExactly("SIMPLY THE BEST")
+    assertThat(dao.findPositionByQuery("SIMPLY BEST")).isEqualTo(60)
+    assertThat(dao.searchTrack("sim be")).isEqualTo(SearchResult(60, "SIMPLY THE BEST"))
+    assertThat(loadSearch("BEST SIMPLY")).isEmpty()
+  }
+
+  @Test
   fun allSearchesExcludeArtistAndPathOnlyMatchesAndHandleNoMatch() = runTest {
     for (query in listOf("Ensemble", "folder", "missing")) {
       assertThat(loadSearch(query)).isEmpty()

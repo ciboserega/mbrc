@@ -67,7 +67,7 @@ interface NowPlayingDao {
   @Query(
     """
       select * from now_playing
-      where title like '%' || :term || '%'
+      where title like '%' || replace(trim(:term), ' ', '%') || '%'
       order by position
       """
   )
@@ -76,7 +76,7 @@ interface NowPlayingDao {
   @Query(
     """
       select * from now_playing
-      where title like '%' || :term || '%'
+      where title like '%' || replace(trim(:term), ' ', '%') || '%'
       order by position
       """
   )
@@ -143,7 +143,7 @@ interface NowPlayingDao {
   @Query(
     """
         select position from now_playing
-        where title like '%' || :query || '%'
+        where title like '%' || replace(trim(:query), ' ', '%') || '%'
         order by position
         limit 1
         """
@@ -173,7 +173,7 @@ interface NowPlayingDao {
   @Query(
     """
         select position, title from now_playing
-        where title like '%' || :query || '%'
+        where title like '%' || replace(trim(:query), ' ', '%') || '%'
         order by position
         limit 1
         """

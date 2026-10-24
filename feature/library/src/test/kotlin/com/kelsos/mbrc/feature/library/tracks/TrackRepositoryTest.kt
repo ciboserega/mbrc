@@ -359,6 +359,33 @@ class TrackRepositoryTest : KoinTest {
   }
 
   @Test
+  fun separatedTitleFragmentsCanSkipWordsButNeverMatchMetadataOnly() {
+    runTest(testDispatcher) {
+      val tracks = TrackGenerator().generateTracks(4) { index, builder ->
+        builder.src = "/words$index.mp3"
+        builder.title = when (index) {
+          1 -> "SIMPLY THE BEST"
+          2 -> "SIMPLY DIFFERENT"
+          3 -> "OTHER BEST"
+          else -> "NOT A MATCH"
+        }
+        if (index == 4) builder.artist = "SIMPLY THE BEST"
+      }
+      dao.insertAll(tracks)
+
+      for (term in listOf("SIMPLY BEST", "sim be", "sim   best")) {
+        assertThat(repository.search(term).asSnapshot().map { it.src })
+          .containsExactly("/words1.mp3")
+        assertThat(
+          repository.search(term, TrackSortField.TITLE, SortOrder.ASC)
+            .asSnapshot().map { it.src }
+        ).containsExactly("/words1.mp3")
+      }
+      assertThat(repository.search("BEST SIMPLY").asSnapshot()).isEmpty()
+    }
+  }
+
+  @Test
   fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val tracks = TrackGenerator().generateTracks(2) { index, builder ->
