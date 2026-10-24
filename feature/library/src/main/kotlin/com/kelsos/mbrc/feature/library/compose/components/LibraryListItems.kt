@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -231,6 +232,11 @@ fun AlbumGridItem(
   }
 }
 
+/**
+ * Library track rows can opt into a title-only layout that wraps as many lines as needed.
+ * The other screens retain the original two-line metadata layout.
+ */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackListItem(
   track: Track,
@@ -238,51 +244,75 @@ fun TrackListItem(
   onQueue: (Queue) -> Unit,
   modifier: Modifier = Modifier,
   showCover: Boolean = true,
-  showAlbum: Boolean = true
+  showAlbum: Boolean = true,
+  titleOnly: Boolean = false
 ) {
   var menuExpanded by remember { mutableStateOf(false) }
   val title = track.title.ifEmpty { stringResource(R.string.unknown_title) }
-  val artist = track.artist.ifEmpty { stringResource(R.string.unknown_artist) }
-  val subtitle = if (showAlbum) {
-    val album = track.album.ifEmpty { stringResource(R.string.unknown_album) }
-    "$artist - $album"
-  } else {
-    artist
+
+  val leading: @Composable () -> Unit = {
+    if (showCover) {
+      AlbumCoverByKey(
+        artist = track.albumArtist.ifEmpty { track.artist },
+        album = track.album,
+        size = 48.dp
+      )
+    } else {
+      Icon(
+        imageVector = Icons.Default.MusicNote,
+        contentDescription = null,
+        modifier = Modifier.size(24.dp),
+        tint = MaterialTheme.colorScheme.primary
+      )
+    }
+  }
+  val trailing: @Composable () -> Unit = {
+    Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+      MoreOptionsButton(onClick = { menuExpanded = true })
+      TrackItemMenu(
+        expanded = menuExpanded,
+        onDismiss = { menuExpanded = false },
+        onQueue = onQueue
+      )
+    }
   }
 
-  DoubleLineRow(
-    title = title,
-    subtitle = subtitle,
-    onClick = onClick,
-    onLongClick = { menuExpanded = true },
-    modifier = modifier,
-    leadingContent = {
-      if (showCover) {
-        AlbumCoverByKey(
-          artist = track.albumArtist.ifEmpty { track.artist },
-          album = track.album,
-          size = 48.dp
+  if (titleOnly) {
+    ListItem(
+      headlineContent = {
+        Text(
+          text = title,
+          softWrap = true,
+          maxLines = Int.MAX_VALUE,
+          overflow = TextOverflow.Clip
         )
-      } else {
-        Icon(
-          imageVector = Icons.Default.MusicNote,
-          contentDescription = null,
-          modifier = Modifier.size(24.dp),
-          tint = MaterialTheme.colorScheme.primary
-        )
-      }
-    },
-    trailingContent = {
-      Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
-        MoreOptionsButton(onClick = { menuExpanded = true })
-        TrackItemMenu(
-          expanded = menuExpanded,
-          onDismiss = { menuExpanded = false },
-          onQueue = onQueue
-        )
-      }
+      },
+      leadingContent = leading,
+      trailingContent = trailing,
+      modifier = modifier.combinedClickable(
+        onClick = onClick,
+        onLongClick = { menuExpanded = true }
+      )
+    )
+  } else {
+    val artist = track.artist.ifEmpty { stringResource(R.string.unknown_artist) }
+    val subtitle = if (showAlbum) {
+      val album = track.album.ifEmpty { stringResource(R.string.unknown_album) }
+      "$artist - $album"
+    } else {
+      artist
     }
-  )
+
+    DoubleLineRow(
+      title = title,
+      subtitle = subtitle,
+      onClick = onClick,
+      onLongClick = { menuExpanded = true },
+      modifier = modifier,
+      leadingContent = leading,
+      trailingContent = trailing
+    )
+  }
 }
 
 @Composable
