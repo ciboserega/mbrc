@@ -6,22 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.automirrored.filled.ViewList
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,16 +21,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kelsos.mbrc.core.common.settings.AlbumViewMode
 import com.kelsos.mbrc.core.common.utilities.AppError
 import com.kelsos.mbrc.core.common.utilities.Outcome
 import com.kelsos.mbrc.core.data.library.album.Album
@@ -51,17 +39,15 @@ import com.kelsos.mbrc.core.ui.compose.TopBarState
 import com.kelsos.mbrc.feature.library.LibraryViewModel
 import com.kelsos.mbrc.feature.library.R
 import com.kelsos.mbrc.feature.library.albums.BrowseAlbumViewModel
-import com.kelsos.mbrc.feature.library.compose.tabs.AlbumsTab
-import com.kelsos.mbrc.feature.library.compose.tabs.ArtistsTab
-import com.kelsos.mbrc.feature.library.compose.tabs.GenresTab
 import com.kelsos.mbrc.feature.library.compose.tabs.TracksTab
 import com.kelsos.mbrc.feature.library.data.LibraryStats
 import com.kelsos.mbrc.feature.library.domain.LibrarySyncProgress
 import com.kelsos.mbrc.feature.library.ui.LibraryUiEvent
 import com.kelsos.mbrc.feature.minicontrol.MiniControl
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
+/** A focused title-search library: tracks are the only visible category. */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun LibraryScreen(
   onOpenDrawer: () -> Unit,
@@ -75,33 +61,16 @@ fun LibraryScreen(
   viewModel: LibraryViewModel = koinViewModel(),
   albumViewModel: BrowseAlbumViewModel = koinViewModel()
 ) {
-  val scope = rememberCoroutineScope()
-
   var isSearchActive by rememberSaveable { mutableStateOf(false) }
   var searchQuery by rememberSaveable { mutableStateOf("") }
   var statsToShow by remember { mutableStateOf<LibraryStats?>(null) }
   var showSortSheet by rememberSaveable { mutableStateOf(false) }
 
-  val albumViewMode by albumViewModel.albumViewMode.collectAsStateWithLifecycle(
-    initialValue = AlbumViewMode.AUTO
-  )
-  val screenWidthDp = with(LocalDensity.current) {
-    LocalWindowInfo.current.containerSize.width.toDp()
-  }
-  val isGridMode = albumViewMode.isGrid(screenWidthDp.value.toInt())
-
-  val albumArtistsOnly by viewModel.albumArtistsOnly.collectAsStateWithLifecycle(
-    initialValue = false
-  )
   val syncProgress by viewModel.progress.collectAsStateWithLifecycle(
     initialValue = LibrarySyncProgress.Idle
   )
 
-  val pagerState = rememberPagerState(pageCount = { LibraryTab.entries.size })
-
-  // String resources for menu items and scaffold configuration
   val searchPlaceholder = stringResource(R.string.library_search_hint)
-  val albumArtistsOnlyLabel = stringResource(R.string.library_album_artists_only)
   val syncStateLabel = stringResource(R.string.library_menu__sync_state)
   val syncProgressTemplate = stringResource(R.string.library__sync_progress)
   val libraryTitle = stringResource(R.string.common_library)
@@ -111,7 +80,6 @@ fun LibraryScreen(
     ""
   }
 
-  // Compute scaffold configuration based on current state
   val topBarState = when {
     isSearchActive -> TopBarState.Search(
       query = searchQuery,
@@ -121,7 +89,7 @@ fun LibraryScreen(
         viewModel.search(query)
       },
       onSearch = {
-        // Library search filters in real-time, no action needed on submit
+        // Library tracks filter as text is typed; no submit required.
       },
       onClose = {
         isSearchActive = false
@@ -134,7 +102,7 @@ fun LibraryScreen(
       val progress = if (syncProgress.total > 0) {
         syncProgress.current.toFloat() / syncProgress.total.toFloat()
       } else {
-        -1f // Indeterminate
+        -1f
       }
       TopBarState.WithProgress(
         title = libraryTitle,
@@ -152,8 +120,7 @@ fun LibraryScreen(
 
   val playAllLabel = stringResource(R.string.menu_play_all)
   val shuffleAllLabel = stringResource(R.string.menu_shuffle_all)
-
-  val menuItems = remember(isSearchActive, syncProgress.running, albumArtistsOnly) {
+  val menuItems = remember(isSearchActive, syncProgress.running) {
     if (isSearchActive || syncProgress.running) {
       emptyList()
     } else {
@@ -167,13 +134,6 @@ fun LibraryScreen(
           onClick = { viewModel.playAll(shuffle = true) }
         ),
         MenuItem(
-          label = albumArtistsOnlyLabel,
-          onClick = { viewModel.updateAlbumArtistOnly(!albumArtistsOnly) },
-          trailingContent = {
-            Checkbox(checked = albumArtistsOnly, onCheckedChange = null)
-          }
-        ),
-        MenuItem(
           label = syncStateLabel,
           onClick = { viewModel.displayLibraryStats() }
         )
@@ -181,46 +141,28 @@ fun LibraryScreen(
     }
   }
 
-  // Show search and sort actions in app bar when not searching and not syncing
   val searchDescription = stringResource(R.string.library_search_hint)
   val sortDescription = stringResource(R.string.sort_button_description)
-  val viewModeDescription = stringResource(R.string.album_view_mode_description)
   val syncDescription = stringResource(R.string.library_action__sync)
-  val isAlbumsTab = pagerState.currentPage == LibraryTab.ALBUMS.ordinal
-  val actionItems = remember(isSearchActive, syncProgress.running, isAlbumsTab, isGridMode) {
+  val actionItems = remember(isSearchActive, syncProgress.running) {
     if (!isSearchActive && !syncProgress.running) {
-      buildList {
-        if (isAlbumsTab) {
-          add(
-            ActionItem(
-              icon = if (isGridMode) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
-              contentDescription = viewModeDescription,
-              onClick = { albumViewModel.toggleViewMode() }
-            )
-          )
-        }
-        add(
-          ActionItem(
-            icon = Icons.Default.Sync,
-            contentDescription = syncDescription,
-            onClick = { viewModel.sync() }
-          )
+      listOf(
+        ActionItem(
+          icon = Icons.Default.Sync,
+          contentDescription = syncDescription,
+          onClick = { viewModel.sync() }
+        ),
+        ActionItem(
+          icon = Icons.AutoMirrored.Filled.Sort,
+          contentDescription = sortDescription,
+          onClick = { showSortSheet = true }
+        ),
+        ActionItem(
+          icon = Icons.Default.Search,
+          contentDescription = searchDescription,
+          onClick = { isSearchActive = true }
         )
-        add(
-          ActionItem(
-            icon = Icons.AutoMirrored.Filled.Sort,
-            contentDescription = sortDescription,
-            onClick = { showSortSheet = true }
-          )
-        )
-        add(
-          ActionItem(
-            icon = Icons.Default.Search,
-            contentDescription = searchDescription,
-            onClick = { isSearchActive = true }
-          )
-        )
-      }
+      )
     } else {
       emptyList()
     }
@@ -246,19 +188,12 @@ fun LibraryScreen(
     modifier = modifier
   ) { paddingValues ->
     LibraryContent(
-      pagerState = pagerState,
       snackbarHostState = snackbarHostState,
       isSyncing = syncProgress.running,
       showSortSheet = showSortSheet,
-      isGridMode = isGridMode,
       onDismissSortSheet = { showSortSheet = false },
-      onNavigateToGenreArtists = onNavigateToGenreArtists,
-      onNavigateToGenreAlbums = onNavigateToGenreAlbums,
-      onNavigateToArtistAlbums = onNavigateToArtistAlbums,
-      onNavigateToAlbumTracks = onNavigateToAlbumTracks,
       onNavigateToPlayer = onNavigateToPlayer,
       onSync = { viewModel.sync() },
-      onTabClick = { index -> scope.launch { pagerState.animateScrollToPage(index) } },
       modifier = Modifier.padding(paddingValues)
     )
   }
@@ -343,111 +278,33 @@ private fun buildSyncCompleteMessage(
   )
 }
 
+/**
+ * A single tracks list replaces the category pager and tab strip.
+ * Keep the mini-player and the list's normal sync/sort behavior.
+ */
 @Composable
 private fun LibraryContent(
-  pagerState: PagerState,
   snackbarHostState: SnackbarHostState,
   isSyncing: Boolean,
   showSortSheet: Boolean,
-  isGridMode: Boolean,
   onDismissSortSheet: () -> Unit,
-  onNavigateToGenreArtists: (Genre) -> Unit,
-  onNavigateToGenreAlbums: (Genre) -> Unit,
-  onNavigateToArtistAlbums: (Artist) -> Unit,
-  onNavigateToAlbumTracks: (Album) -> Unit,
   onNavigateToPlayer: () -> Unit,
   onSync: () -> Unit,
-  onTabClick: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxSize()) {
-    PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
-      LibraryTab.entries.forEachIndexed { index, tab ->
-        Tab(
-          selected = pagerState.currentPage == index,
-          onClick = { onTabClick(index) },
-          text = { Text(stringResource(tab.titleResId)) }
-        )
-      }
-    }
-
-    HorizontalPager(
-      state = pagerState,
-      beyondViewportPageCount = 1,
+    TracksTab(
+      snackbarHostState = snackbarHostState,
+      isSyncing = isSyncing,
+      showSortSheet = showSortSheet,
+      onDismissSortSheet = onDismissSortSheet,
+      onSync = onSync,
       modifier = Modifier.weight(1f)
-    ) { page ->
-      LibraryTabPage(
-        tab = LibraryTab.entries[page],
-        snackbarHostState = snackbarHostState,
-        isSyncing = isSyncing,
-        showSortSheet = showSortSheet && pagerState.currentPage == page,
-        isGridMode = isGridMode,
-        onDismissSortSheet = onDismissSortSheet,
-        onNavigateToGenreArtists = onNavigateToGenreArtists,
-        onNavigateToGenreAlbums = onNavigateToGenreAlbums,
-        onNavigateToArtistAlbums = onNavigateToArtistAlbums,
-        onNavigateToAlbumTracks = onNavigateToAlbumTracks,
-        onSync = onSync
-      )
-    }
+    )
 
     MiniControl(
       onNavigateToPlayer = onNavigateToPlayer,
       snackbarHostState = snackbarHostState
-    )
-  }
-}
-
-@Composable
-private fun LibraryTabPage(
-  tab: LibraryTab,
-  snackbarHostState: SnackbarHostState,
-  isSyncing: Boolean,
-  showSortSheet: Boolean,
-  isGridMode: Boolean,
-  onDismissSortSheet: () -> Unit,
-  onNavigateToGenreArtists: (Genre) -> Unit,
-  onNavigateToGenreAlbums: (Genre) -> Unit,
-  onNavigateToArtistAlbums: (Artist) -> Unit,
-  onNavigateToAlbumTracks: (Album) -> Unit,
-  onSync: () -> Unit
-) {
-  when (tab) {
-    LibraryTab.GENRES -> GenresTab(
-      snackbarHostState = snackbarHostState,
-      isSyncing = isSyncing,
-      showSortSheet = showSortSheet,
-      onNavigateToGenreArtists = onNavigateToGenreArtists,
-      onNavigateToGenreAlbums = onNavigateToGenreAlbums,
-      onDismissSortSheet = onDismissSortSheet,
-      onSync = onSync
-    )
-
-    LibraryTab.ARTISTS -> ArtistsTab(
-      snackbarHostState = snackbarHostState,
-      isSyncing = isSyncing,
-      showSortSheet = showSortSheet,
-      onNavigateToArtistAlbums = onNavigateToArtistAlbums,
-      onDismissSortSheet = onDismissSortSheet,
-      onSync = onSync
-    )
-
-    LibraryTab.ALBUMS -> AlbumsTab(
-      snackbarHostState = snackbarHostState,
-      isSyncing = isSyncing,
-      showSortSheet = showSortSheet,
-      isGridMode = isGridMode,
-      onNavigateToAlbumTracks = onNavigateToAlbumTracks,
-      onDismissSortSheet = onDismissSortSheet,
-      onSync = onSync
-    )
-
-    LibraryTab.TRACKS -> TracksTab(
-      snackbarHostState = snackbarHostState,
-      isSyncing = isSyncing,
-      showSortSheet = showSortSheet,
-      onDismissSortSheet = onDismissSortSheet,
-      onSync = onSync
     )
   }
 }

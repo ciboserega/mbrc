@@ -7,7 +7,7 @@ API. A two-character term has no special minimum-length restriction.
 
 | Entry point | Data and matching | Updates |
 | --- | --- | --- |
-| Library → Tracks | `TrackDao.search` and all eight sorted `searchBy…` queries match an order-independent match for every non-empty, space-separated title fragment using a recursive SQLite token query. Artist, album, album artist, path, and genre do not affect membership. The selected sort field only affects ordering. | `LibraryScreen.onQueryChange` → `LibraryViewModel.search` → `LibrarySearchModel.term` → `BrowseTrackViewModel.tracks`. Input is debounced for 300 ms; submission is not required. Clearing restores the sorted full library. |
+| Library (tracks only) | `TrackDao.search` and all eight sorted `searchBy…` queries match an order-independent match for every non-empty, space-separated title fragment using a recursive SQLite token query. Artist, album, album artist, path, and genre do not affect membership. The selected sort field only affects ordering. | `LibraryScreen.onQueryChange` → `LibraryViewModel.search` → `LibrarySearchModel.term` → `BrowseTrackViewModel.tracks`. Input is debounced for 300 ms; submission is not required. Clearing restores the sorted full library. |
 | Now Playing / Queue | `NowPlayingDao.search`, `simpleSearch`, `findPositionByQuery`, and `searchTrack` match each title fragment independently (regardless of word order) and order results by queue position. Single-result lookups return the first match in queue order. Only cached queue entries are searched. | Typing filters the list after 300 ms without sending playback commands. Enter retains the existing play-first-match action. Clearing or closing returns to the full queue and its scroll state. |
 
 Filtered queue rows retain their original queue positions for playback, removal,
@@ -32,12 +32,11 @@ queries likewise matched title **or artist**. The queue screen only executed a
 search on submission, then played the first match instead of filtering while
 editing. Changing only `LibrarySearchModel` would not fix the queue screen.
 
-The library search bar is shared by four tabs, but each tab searches its own
-entity. The library initially opens on Genres. Genres searches genre names;
-Artists searches artist names (respecting the album-artists-only preference);
-Albums searches album and artist names. These are not song-title searches and
-keep their existing behavior. Switching to Tracks searches song titles using
-the same entered term.
+The library screen now displays the tracks list directly, without the
+Genres, Artists, Albums, or Tracks tab strip. Search always filters song
+titles here; users no longer need to switch to Tracks. The original artist,
+album, and genre data models remain for syncing and compatibility, but their
+browse tabs are hidden from the library screen.
 
 Album-track detail screens browse a selected album (or an artist's non-album
 tracks) and have no search field. Playlist and radio repository/DAO `search`
