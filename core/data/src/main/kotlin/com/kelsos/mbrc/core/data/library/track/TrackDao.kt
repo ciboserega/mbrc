@@ -31,7 +31,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
     """
   )
@@ -150,7 +160,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by title collate nocase asc
     """
   )
@@ -159,7 +179,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by title collate nocase desc
     """
   )
@@ -168,7 +198,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by
       CASE
         WHEN LOWER(artist) LIKE 'the %' THEN SUBSTR(artist, 5)
@@ -182,7 +222,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by
       CASE
         WHEN LOWER(artist) LIKE 'the %' THEN SUBSTR(artist, 5)
@@ -196,7 +246,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by album collate nocase asc, disc asc, trackno asc
     """
   )
@@ -205,7 +265,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by album collate nocase desc, disc asc, trackno asc
     """
   )
@@ -241,7 +311,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by
       CASE
         WHEN LOWER(album_artist) LIKE 'the %' THEN SUBSTR(album_artist, 5)
@@ -255,7 +335,17 @@ interface TrackDao {
   @Query(
     """
     select * from track
-    where title LIKE '%' || replace(trim(:term), ' ', '%') || '%'
+    where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
     order by
       CASE
         WHEN LOWER(album_artist) LIKE 'the %' THEN SUBSTR(album_artist, 5)

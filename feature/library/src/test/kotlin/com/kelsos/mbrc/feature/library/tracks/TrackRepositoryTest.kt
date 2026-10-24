@@ -381,7 +381,35 @@ class TrackRepositoryTest : KoinTest {
             .asSnapshot().map { it.src }
         ).containsExactly("/words1.mp3")
       }
-      assertThat(repository.search("BEST SIMPLY").asSnapshot()).isEmpty()
+      assertThat(repository.search("BEST SIMPLY").asSnapshot().map { it.src })
+        .containsExactly("/words1.mp3")
+      assertThat(repository.search("be sim").asSnapshot().map { it.src })
+        .containsExactly("/words1.mp3")
+    }
+  }
+
+  @Test
+  fun cyrillicFragmentsMatchWhenEnteredInReverseOrderAndIgnoreArtist() {
+    runTest(testDispatcher) {
+      val tracks = TrackGenerator().generateTracks(2) { index, builder ->
+        builder.src = "/cyrillic$index.mp3"
+        if (index == 1) {
+          builder.title = "БУКУРАЦИ-ВЭ ПРИЕТЕНЬ"
+        } else {
+          builder.title = "НЕСВЯЗАННАЯ ПЕСНЯ"
+          builder.artist = "БУКУ ПРИЕ"
+        }
+      }
+      dao.insertAll(tracks)
+
+      for (term in listOf("БУКУ ПРИЕ", "ПРИЕ БУКУ", "ПРИЕ   БУКУ")) {
+        assertThat(repository.search(term).asSnapshot().map { it.src })
+          .containsExactly("/cyrillic1.mp3")
+        assertThat(
+          repository.search(term, TrackSortField.TITLE, SortOrder.ASC)
+            .asSnapshot().map { it.src }
+        ).containsExactly("/cyrillic1.mp3")
+      }
     }
   }
 

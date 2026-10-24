@@ -67,7 +67,17 @@ interface NowPlayingDao {
   @Query(
     """
       select * from now_playing
-      where title like '%' || replace(trim(:term), ' ', '%') || '%'
+      where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
       order by position
       """
   )
@@ -76,7 +86,17 @@ interface NowPlayingDao {
   @Query(
     """
       select * from now_playing
-      where title like '%' || replace(trim(:term), ' ', '%') || '%'
+      where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:term) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
       order by position
       """
   )
@@ -143,7 +163,17 @@ interface NowPlayingDao {
   @Query(
     """
         select position from now_playing
-        where title like '%' || replace(trim(:query), ' ', '%') || '%'
+        where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:query) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
         order by position
         limit 1
         """
@@ -173,7 +203,17 @@ interface NowPlayingDao {
   @Query(
     """
         select position, title from now_playing
-        where title like '%' || replace(trim(:query), ' ', '%') || '%'
+        where not exists (
+      with recursive search_parts(token, remaining) as (
+        select '', trim(:query) || ' '
+        union all
+        select substr(remaining, 1, instr(remaining, ' ') - 1),
+               ltrim(substr(remaining, instr(remaining, ' ') + 1))
+        from search_parts where remaining <> ''
+      )
+      select 1 from search_parts
+      where token <> '' and coalesce(title, '') not like '%' || token || '%'
+    )
         order by position
         limit 1
         """

@@ -7,17 +7,18 @@ API. A two-character term has no special minimum-length restriction.
 
 | Entry point | Data and matching | Updates |
 | --- | --- | --- |
-| Library → Tracks | `TrackDao.search` and all eight sorted `searchBy…` queries match `title LIKE '%' || replace(trim(:term), ' ', '%') || '%'`. Artist, album, album artist, path, and genre do not affect membership. The selected sort field only affects ordering. | `LibraryScreen.onQueryChange` → `LibraryViewModel.search` → `LibrarySearchModel.term` → `BrowseTrackViewModel.tracks`. Input is debounced for 300 ms; submission is not required. Clearing restores the sorted full library. |
-| Now Playing / Queue | `NowPlayingDao.search`, `simpleSearch`, `findPositionByQuery`, and `searchTrack` match title fragments (allowing gaps between typed words) and order matches by queue position. Single-result lookups return the first match in queue order. Only cached queue entries are searched. | Typing filters the list after 300 ms without sending playback commands. Enter retains the existing play-first-match action. Clearing or closing returns to the full queue and its scroll state. |
+| Library → Tracks | `TrackDao.search` and all eight sorted `searchBy…` queries match an order-independent match for every non-empty, space-separated title fragment using a recursive SQLite token query. Artist, album, album artist, path, and genre do not affect membership. The selected sort field only affects ordering. | `LibraryScreen.onQueryChange` → `LibraryViewModel.search` → `LibrarySearchModel.term` → `BrowseTrackViewModel.tracks`. Input is debounced for 300 ms; submission is not required. Clearing restores the sorted full library. |
+| Now Playing / Queue | `NowPlayingDao.search`, `simpleSearch`, `findPositionByQuery`, and `searchTrack` match each title fragment independently (regardless of word order) and order results by queue position. Single-result lookups return the first match in queue order. Only cached queue entries are searched. | Typing filters the list after 300 ms without sending playback commands. Enter retains the existing play-first-match action. Clearing or closing returns to the full queue and its scroll state. |
 
 Filtered queue rows retain their original queue positions for playback, removal,
 and movement. List offsets within the search results are not queue positions.
 
 ## Multi-word search
 
-Spaces in a typed query are treated as gaps between title fragments: `SIMPLY BEST`
-and `sim be` both find `SIMPLY THE BEST`. Fragments must appear in the
-same order as entered, but other words may occur between them. A single
+Spaces separate independent title fragments: `SIMPLY BEST`, `BEST SIMPLY`,
+`sim be`, and `be sim` all find `SIMPLY THE BEST`. The fragments can appear
+in any order and other words may occur between them. Cyrillic queries such as
+`ПРИЕ БУКУ` find `БУКУРАЦИ-ВЭ ПРИЕТЕНЬ`. A single
 fragment (for example `be`) still matches anywhere in a title. Filtering
 continues to use the title only; matching artists or albums never adds tracks.
 
@@ -53,7 +54,7 @@ and `%`/`_` pattern characters.
 
 ## Regression coverage and manual checks
 
-Room tests cover two-letter matches at the start, middle, and end of titles,\nordered partial-word matching across intervening words,
+Room tests cover two-letter matches at the start, middle, and end of titles,\norder-independent partial-word matching across intervening words,
 metadata-only false positives, all track sort fields/directions and the legacy
 track query, and all four queue DAO queries with deterministic queue ordering.
 Flow/ViewModel tests cover typing, replacing, clearing, and debouncing without

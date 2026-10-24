@@ -84,7 +84,39 @@ class NowPlayingSearchTest {
     assertThat(dao.simpleSearch("sim be").map { it.title }).containsExactly("SIMPLY THE BEST")
     assertThat(dao.findPositionByQuery("SIMPLY BEST")).isEqualTo(60)
     assertThat(dao.searchTrack("sim be")).isEqualTo(SearchResult(60, "SIMPLY THE BEST"))
-    assertThat(loadSearch("BEST SIMPLY")).isEmpty()
+    assertThat(loadSearch("BEST SIMPLY").map { it.title }).containsExactly("SIMPLY THE BEST")
+    assertThat(dao.simpleSearch("BEST SIMPLY").map { it.title })
+      .containsExactly("SIMPLY THE BEST")
+    assertThat(dao.findPositionByQuery("BEST SIMPLY")).isEqualTo(60)
+    assertThat(dao.searchTrack("BEST SIMPLY")).isEqualTo(SearchResult(60, "SIMPLY THE BEST"))
+    assertThat(loadSearch("sim    be").map { it.title }).containsExactly("SIMPLY THE BEST")
+  }
+
+  @Test
+  fun cyrillicTitleFragmentsCanBeEnteredInEitherOrder() = runTest {
+    dao.insertAll(
+      listOf(
+        NowPlayingEntity(
+          title = "БУКУРАЦИ-ВЭ ПРИЕТЕНЬ",
+          path = "/music/cyrillic.mp3",
+          position = 70
+        ),
+        NowPlayingEntity(
+          title = "ДРУГАЯ ПЕСНЯ",
+          artist = "ПРИЕ БУКУ",
+          path = "/music/artist-only.mp3",
+          position = 80
+        )
+      )
+    )
+
+    for (term in listOf("БУКУ ПРИЕ", "ПРИЕ БУКУ", "БУКУ   ПРИЕ")) {
+      assertThat(loadSearch(term).map { it.position }).containsExactly(70)
+      assertThat(dao.simpleSearch(term).map { it.position }).containsExactly(70)
+      assertThat(dao.findPositionByQuery(term)).isEqualTo(70)
+      assertThat(dao.searchTrack(term))
+        .isEqualTo(SearchResult(70, "БУКУРАЦИ-ВЭ ПРИЕТЕНЬ"))
+    }
   }
 
   @Test
