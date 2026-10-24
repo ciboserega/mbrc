@@ -29,7 +29,8 @@ fun PlaylistItemLight() {
       BrowserItemRow(
         item = samplePlaylist,
         onFolderClick = {},
-        onPlaylistClick = {}
+        onPlaylistClick = {},
+        onPlaylistPlay = {}
       )
     }
   }
@@ -44,7 +45,8 @@ fun PlaylistItemDark() {
       BrowserItemRow(
         item = samplePlaylist,
         onFolderClick = {},
-        onPlaylistClick = {}
+        onPlaylistClick = {},
+        onPlaylistPlay = {}
       )
     }
   }
