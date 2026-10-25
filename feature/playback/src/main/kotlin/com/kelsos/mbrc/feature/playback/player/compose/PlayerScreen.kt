@@ -224,7 +224,8 @@ fun PlayerScreen(
         ActionItem(
           icon = Icons.Default.Search,
           contentDescription = stringResource(R.string.player_search_library),
-          onClick = onNavigateToLibrarySearch
+          onClick = onNavigateToLibrarySearch,
+          iconSize = 48.dp
         )
       ),
       defaultTitle = title,
