@@ -320,7 +320,7 @@ private fun LibraryMenuText(text: String) {
   Text(
     text = text,
     style = MaterialTheme.typography.bodyLarge.copy(
-      fontSize = MaterialTheme.typography.bodyLarge.fontSize + 2.sp
+      fontSize = 18.sp
     )
   )
 }
