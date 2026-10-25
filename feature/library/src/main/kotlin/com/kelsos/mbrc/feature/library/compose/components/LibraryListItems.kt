@@ -342,7 +342,8 @@ private fun QueueActionMenuText(action: String, arrow: String) {
       }
       append(" $arrow")
     },
-    style = MaterialTheme.typography.bodyLarge
+    style = MaterialTheme.typography.bodyLarge,
+    modifier = Modifier.padding(start = 24.dp)
   )
 }
 
