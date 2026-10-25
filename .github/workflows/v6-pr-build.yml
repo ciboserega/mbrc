@@ -44,3 +44,5 @@ jobs:
 # UI update based on build 121: dismiss snackbar notices after 1s; enlarge drawer labels by two typography steps.
 
 # Branding update from build 125: use CIBO drawer logo, gray connection circle, Wi-Fi glyph +4dp.
+
+# Run compatibility APK build for CIBO branding changes based on build 125.
