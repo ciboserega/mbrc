@@ -27,6 +27,46 @@ class V6PlaylistApi(private val client: V6HttpRpcClient, moshi: Moshi = Moshi.Bu
     )
   }
 
+  /** Read a page of tracks and the opaque version token used to guard playlist edits. */
+  suspend fun tracks(
+    url: String,
+    offset: Int = 0,
+    limit: Int = 100,
+    query: String? = null
+  ): V6PlaylistTracksPage {
+    require(url.isNotBlank()) { "playlist url must not be blank" }
+    require(offset >= 0) { "offset must not be negative" }
+    require(limit in 1..1000) { "limit must be between 1 and 1000" }
+    val payload = buildMap<String, Any> {
+      put("url", url)
+      put("offset", offset)
+      put("limit", limit)
+      query?.takeIf { it.isNotBlank() }?.let { put("query", it) }
+    }
+    val raw = client.request("playlist_tracks", payload)
+    val json = mapAdapter.fromJson(raw) ?: error("Empty playlist_tracks response")
+    val items = (json["items"] as? List<*>)?.mapNotNull { row ->
+      val item = row as? Map<*, *> ?: return@mapNotNull null
+      val src = item["src"] as? String ?: return@mapNotNull null
+      V6PlaylistTrack(
+        src = src,
+        title = item["title"] as? String ?: "",
+        artist = item["artist"]?.toString() ?: "",
+        album = item["album"] as? String ?: "",
+        order = (item["order"] as? Number)?.toInt() ?: -1,
+        position = (item["position"] as? Number)?.toInt() ?: -1
+      )
+    }.orEmpty()
+    return V6PlaylistTracksPage(
+      name = json["name"] as? String ?: url,
+      version = json["version"] as? String,
+      editable = json["editable"] as? Boolean ?: false,
+      total = (json["total"] as? Number)?.toInt() ?: items.size,
+      offset = (json["offset"] as? Number)?.toInt() ?: offset,
+      items = items
+    )
+  }
+
   /** Append file paths to the end of a playlist without replacing its current contents. */
   suspend fun addTracks(url: String, paths: List<String>, version: String? = null): V6PlaylistMutation {
     require(url.isNotBlank()) { "playlist url must not be blank" }
@@ -49,3 +89,21 @@ class V6PlaylistApi(private val client: V6HttpRpcClient, moshi: Moshi = Moshi.Bu
 data class V6Playlist(val url: String, val name: String, val editable: Boolean)
 data class V6PlaylistPage(val total: Int, val offset: Int, val items: List<V6Playlist>)
 data class V6PlaylistMutation(val version: String?, val affected: Int)
+data class V6PlaylistTrack(
+  val src: String,
+  val title: String,
+  val artist: String,
+  val album: String,
+  /** Stable playlist index used by mutation operations. */
+  val order: Int,
+  /** Position within the current returned page/search results. */
+  val position: Int
+)
+data class V6PlaylistTracksPage(
+  val name: String,
+  val version: String?,
+  val editable: Boolean,
+  val total: Int,
+  val offset: Int,
+  val items: List<V6PlaylistTrack>
+)
