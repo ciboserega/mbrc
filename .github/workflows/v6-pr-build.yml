@@ -35,3 +35,4 @@ jobs:
 
 # Baseline APK build for stable/protocol-v6-baseline (app source at 8eb781ffac63d00c278685dacd7e117a7378b6b2).
 # Current UI update: separate NEXT/LAST buttons, widened 26dp to the left.
+# Current UI update: Library search icon enlarged from 24dp to 48dp.
