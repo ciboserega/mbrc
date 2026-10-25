@@ -32,3 +32,5 @@ jobs:
           path: app/build/outputs/apk/github/debug/*.apk
           if-no-files-found: warn
           retention-days: 14
+
+# Baseline APK build for stable/protocol-v6-baseline (app source at 8eb781ffac63d00c278685dacd7e117a7378b6b2).
