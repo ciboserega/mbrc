@@ -334,9 +334,6 @@ private fun LibraryMenuText(text: String, fontSize: TextUnit = 18.sp) {
 private fun QueueActionMenuText(action: String, arrow: String) {
   Text(
     text = buildAnnotatedString {
-      withStyle(SpanStyle(fontSize = 20.sp)) {
-        append("Queue ")
-      }
       withStyle(SpanStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)) {
         append(action)
       }
@@ -353,7 +350,7 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
     onDismissRequest = onDismiss
   ) {
     DropdownMenuItem(
-      modifier = Modifier.padding(vertical = 4.dp),
+      modifier = Modifier.padding(vertical = 10.dp),
       text = { QueueActionMenuText(action = "NEXT", arrow = "➡️") },
       onClick = {
         onDismiss()
@@ -361,7 +358,7 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
       }
     )
     DropdownMenuItem(
-      modifier = Modifier.padding(vertical = 4.dp),
+      modifier = Modifier.padding(vertical = 10.dp),
       text = { QueueActionMenuText(action = "LAST", arrow = "⬇️") },
       onClick = {
         onDismiss()
