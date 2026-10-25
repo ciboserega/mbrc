@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -385,7 +386,7 @@ private fun DrawerNavigationItem(
     label = {
       Text(
         text = stringResource(item.titleRes),
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.titleMedium,
         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
       )
     },
@@ -393,6 +394,7 @@ private fun DrawerNavigationItem(
     onClick = onClick ?: { onNavigate(item.screen) },
     modifier = Modifier
       .fillMaxWidth()
+      .defaultMinSize(minHeight = 66.dp)
       .padding(horizontal = 12.dp, vertical = 2.dp),
     shape = RoundedCornerShape(28.dp),
     colors = colors
