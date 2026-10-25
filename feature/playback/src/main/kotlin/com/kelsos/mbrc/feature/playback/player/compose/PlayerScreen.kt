@@ -1109,7 +1109,7 @@ private fun ProgressSection(
       // proportional digits are not the same width.
       val timeStyle = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum")
       Text(
-        text = displayedCurrent.toMinutes(),
+        text = if (isStopped) "00:00" else position.currentMinutes,
         style = timeStyle,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
