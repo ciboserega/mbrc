@@ -749,7 +749,8 @@ fun NowPlayingTrackItem(
   onGoToArtist: () -> Unit,
   modifier: Modifier = Modifier,
   dragHandleModifier: Modifier = Modifier,
-  onRemove: (() -> Unit)? = null
+  onRemove: (() -> Unit)? = null,
+  showOverflowMenu: Boolean = true
 ) {
   var showMenu by remember { mutableStateOf(false) }
 
@@ -827,7 +828,8 @@ fun NowPlayingTrackItem(
         }
 
         // Overflow menu
-        Box {
+        if (showOverflowMenu) {
+          Box {
           IconButton(onClick = { showMenu = true }) {
             Icon(
               imageVector = Icons.Default.MoreVert,
@@ -884,6 +886,7 @@ fun NowPlayingTrackItem(
               )
             }
           }
+        }
         }
 
         // Drag handle — 48dp touch target wraps a 24dp icon. The handle owns
