@@ -39,8 +39,8 @@
   <string name="menu_play">Play Now</string>
   <string name="menu_play_artist">Play Now (Artist)</string>
   <string name="menu_play_queue_all">Play Now (Queue All)</string>
-  <string name="menu_queue_last">Queue Last</string>
-  <string name="menu_queue_next">Queue Next</string>
+  <string name="menu_queue_last">Queue LAST</string>
+  <string name="menu_queue_next">Queue NEXT</string>
   <string name="menu_play_all">Play All</string>
   <string name="menu_shuffle_all">Shuffle All</string>
   <string name="library__play_all_success">Playing entire library</string>
