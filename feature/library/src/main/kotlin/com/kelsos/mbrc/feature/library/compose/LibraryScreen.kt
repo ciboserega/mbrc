@@ -162,7 +162,8 @@ fun LibraryScreen(
         ActionItem(
           icon = Icons.Default.Search,
           contentDescription = searchDescription,
-          onClick = { isSearchActive = true }
+          onClick = { isSearchActive = true },
+          iconSize = 48.dp
         )
       )
     } else {
