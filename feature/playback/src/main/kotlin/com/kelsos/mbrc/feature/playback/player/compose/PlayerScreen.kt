@@ -1227,9 +1227,9 @@ private fun PlaybackControls(playbackState: PlaybackState, actions: IPlayerActio
           onClick = actions.playPause,
           onLongClick = {
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-            actions.stop()
+            actions.seek(0)
           },
-          onLongClickLabel = stringResource(R.string.main_button_stop_description)
+          onLongClickLabel = stringResource(R.string.main_button_restart_track_description)
         )
     ) {
       Box(contentAlignment = Alignment.Center) {
