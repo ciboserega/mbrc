@@ -32,6 +32,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
@@ -71,6 +73,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -84,6 +87,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -107,6 +111,10 @@ import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.ui.R as CoreUiR
 import com.kelsos.mbrc.core.ui.compose.ActionItem
 import com.kelsos.mbrc.core.ui.compose.DynamicScreenScaffold
+import com.kelsos.mbrc.core.ui.compose.DragDropState
+import com.kelsos.mbrc.core.ui.compose.displayedSourceIndex
+import com.kelsos.mbrc.core.ui.compose.dragHandle
+import com.kelsos.mbrc.core.ui.compose.rememberDragDropState
 import com.kelsos.mbrc.core.ui.compose.ThinSlider
 import com.kelsos.mbrc.core.ui.compose.TopBarState
 import com.kelsos.mbrc.core.ui.compose.WaveProgressIndicator
@@ -858,6 +866,24 @@ private fun LandscapePlayerLayout(
 }
 
 @Composable
+private fun queuePreviewSourceIndex(
+  slot: Int,
+  dragDropState: DragDropState,
+  tracks: LazyPagingItems<NowPlaying>,
+  draggedId: Long?
+): Int {
+  val source = dragDropState.dragSourceIndex
+  val target = dragDropState.draggingItemIndex
+  if (source == null || target == null) return slot
+
+  // Paging may publish the moved track before the drag settle animation completes.
+  // Once the dragged id is already at the target slot, render the emitted order directly.
+  val pagingHasNewOrder = dragDropState.isSettling &&
+    draggedId != null &&
+    tracks.peek(target)?.id == draggedId
+  return if (pagingHasNewOrder) slot else displayedSourceIndex(slot, source, target)
+}
+
 private fun QueuePreview(
   tracks: LazyPagingItems<NowPlaying>,
   playingTrackPath: String,
@@ -866,6 +892,17 @@ private fun QueuePreview(
   onGoToArtist: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val queueViewModel: NowPlayingViewModel = koinViewModel()
+  val listState = rememberLazyListState()
+  val dragDropState = rememberDragDropState(
+    lazyListState = listState,
+    onMove = { from, to -> queueViewModel.actions.moveTrack(from, to) },
+    onDragEnd = { queueViewModel.actions.move() }
+  )
+  val draggedId = remember(dragDropState.dragSourceIndex) {
+    dragDropState.dragSourceIndex?.let { tracks.peek(it)?.id }
+  }
+
   Surface(
     modifier = modifier,
     shape = RoundedCornerShape(12.dp),
@@ -891,12 +928,20 @@ private fun QueuePreview(
           )
         }
       } else {
-        LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+        LazyColumn(
+          state = listState,
+          modifier = Modifier.weight(1f).fillMaxWidth()
+        ) {
           items(
             count = tracks.itemCount,
-            key = { index -> tracks.peek(index)?.id?.toString() ?: "queue-placeholder-$index" }
-          ) { index ->
-            val track = tracks[index]
+            key = { slot ->
+              val source = queuePreviewSourceIndex(slot, dragDropState, tracks, draggedId)
+              tracks.peek(source)?.id?.toString() ?: "queue-placeholder-$source"
+            }
+          ) { slot ->
+            val sourceIndex = queuePreviewSourceIndex(slot, dragDropState, tracks, draggedId)
+            val track = tracks[sourceIndex]
+            val isDragging = slot == dragDropState.draggingItemIndex
             if (track == null) {
               Spacer(
                 modifier = Modifier
@@ -908,12 +953,20 @@ private fun QueuePreview(
               NowPlayingTrackItem(
                 track = track,
                 isPlaying = track.path == playingTrackPath,
-                isDragging = false,
+                isDragging = isDragging,
                 isPlaybackActive = isPlaybackActive && track.path == playingTrackPath,
                 onClick = { onTrackClick(track.position) },
                 onGoToAlbum = null,
                 onGoToArtist = { onGoToArtist(track.artist) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = if (isDragging) {
+                  Modifier
+                    .fillMaxWidth()
+                    .zIndex(1f)
+                    .graphicsLayer { translationY = dragDropState.draggingItemOffset }
+                } else {
+                  Modifier.fillMaxWidth().animateItem(fadeInSpec = null, fadeOutSpec = null)
+                },
+                dragHandleModifier = Modifier.dragHandle(dragDropState, sourceIndex),
                 showOverflowMenu = false
               )
             }
@@ -1115,7 +1168,7 @@ private fun ProgressSection(
     ) {
       // Tabular figures: the elapsed time reflows every second otherwise, because the default
       // proportional digits are not the same width.
-      val timeStyle = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum")
+      val timeStyle = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum")
       Text(
         text = if (isStopped) "00:00" else position.currentMinutes,
         style = timeStyle,
