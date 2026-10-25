@@ -331,7 +331,7 @@ fun PlayerScreenContent(
       playbackState.playerState == PlayerState.Playing &&
       playingTrack.path.isNotBlank() &&
       playingPosition.total > 0 &&
-      playingPosition.current >= playingPosition.total - STOP_BEFORE_END_MS &&
+      playingPosition.current >= playingPosition.total - PlayerConstants.STOP_BEFORE_END_MS &&
       stopRequestedForTrack != playingTrack.path
     ) {
       stopRequestedForTrack = playingTrack.path
