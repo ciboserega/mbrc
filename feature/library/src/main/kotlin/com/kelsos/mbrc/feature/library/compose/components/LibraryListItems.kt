@@ -316,11 +316,11 @@ fun TrackListItem(
 }
 
 @Composable
-private fun LibraryMenuText(text: String) {
+private fun LibraryMenuText(text: String, fontSize: TextUnit = 18.sp) {
   Text(
     text = text,
     style = MaterialTheme.typography.bodyLarge.copy(
-      fontSize = 18.sp
+      fontSize = fontSize
     )
   )
 }
@@ -332,38 +332,17 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
     onDismissRequest = onDismiss
   ) {
     DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_play)) },
-      onClick = {
-        onDismiss()
-        onQueue(Queue.Now)
-      }
-    )
-    DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_queue_next)) },
+      text = { LibraryMenuText(stringResource(R.string.menu_queue_next), fontSize = 22.sp) },
       onClick = {
         onDismiss()
         onQueue(Queue.Next)
       }
     )
     DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_queue_last)) },
+      text = { LibraryMenuText(stringResource(R.string.menu_queue_last), fontSize = 22.sp) },
       onClick = {
         onDismiss()
         onQueue(Queue.Last)
-      }
-    )
-    DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_play_artist)) },
-      onClick = {
-        onDismiss()
-        onQueue(Queue.PlayArtist)
-      }
-    )
-    DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_play_queue_all)) },
-      onClick = {
-        onDismiss()
-        onQueue(Queue.AddAll)
       }
     )
   }
