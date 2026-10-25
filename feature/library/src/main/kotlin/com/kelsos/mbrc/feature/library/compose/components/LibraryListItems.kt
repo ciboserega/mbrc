@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
@@ -350,14 +351,17 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
   DropdownMenu(
     expanded = expanded,
     onDismissRequest = onDismiss,
-    modifier = Modifier.border(
-      width = 2.dp,
-      color = Color.DarkGray,
-      shape = RoundedCornerShape(4.dp)
-    )
+    // Keep the popup's right edge anchored while adding 26dp of width to the left.
+    modifier = Modifier.width(138.dp)
   ) {
     DropdownMenuItem(
-      modifier = Modifier.padding(vertical = 10.dp),
+      modifier = Modifier
+        .padding(horizontal = 4.dp, vertical = 4.dp)
+        .border(
+          width = 2.dp,
+          color = Color.DarkGray,
+          shape = RoundedCornerShape(10.dp)
+        ),
       text = { QueueActionMenuText(action = "NEXT", arrow = "➡️") },
       onClick = {
         onDismiss()
@@ -365,7 +369,13 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
       }
     )
     DropdownMenuItem(
-      modifier = Modifier.padding(vertical = 10.dp),
+      modifier = Modifier
+        .padding(horizontal = 4.dp, vertical = 4.dp)
+        .border(
+          width = 2.dp,
+          color = Color.DarkGray,
+          shape = RoundedCornerShape(10.dp)
+        ),
       text = { QueueActionMenuText(action = "LAST", arrow = "⬇️") },
       onClick = {
         onDismiss()
