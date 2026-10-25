@@ -895,7 +895,8 @@ private fun QueuePreview(
                 onClick = { onTrackClick(track.position) },
                 onGoToAlbum = null,
                 onGoToArtist = { onGoToArtist(track.artist) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                showOverflowMenu = false
               )
             }
           }
