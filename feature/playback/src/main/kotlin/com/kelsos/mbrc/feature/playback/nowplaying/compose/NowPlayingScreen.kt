@@ -798,14 +798,14 @@ fun NowPlayingTrackItem(
         if (isPlaying && isPlaybackActive) {
           AudioBarsIndicator(
             color = MaterialTheme.colorScheme.primary,
-            barMaxHeight = 24.dp,
-            modifier = Modifier.size(32.dp)
+            barMaxHeight = 20.dp,
+            modifier = Modifier.size(20.dp)
           )
         } else {
-          Spacer(modifier = Modifier.size(32.dp))
+          Spacer(modifier = Modifier.size(20.dp))
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
         // Track info
         Column(modifier = Modifier.weight(1f)) {
