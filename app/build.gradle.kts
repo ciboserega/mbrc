@@ -95,7 +95,7 @@ val appVersionCode = 132
 val minSDKVersion = 23
 val compileSDKVersion = 37
 // targetSdk 37 opts into Android 17 behaviors (see ACCESS_LOCAL_NETWORK handling in MainActivity).
-val targetSDKVersion = 37
+val targetSDKVersion = providers.gradleProperty("compatTargetSdk").orNull?.toIntOrNull() ?: 37
 
 android {
   compileSdk = compileSDKVersion
