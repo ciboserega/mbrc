@@ -640,12 +640,12 @@ private fun PortraitPlayerLayout(
         onGoToArtist = onNavigateToArtist,
         modifier = Modifier.requiredSize(
           width = minOf(maxWidth, maxHeight) + 20.dp,
-          height = minOf(maxWidth, maxHeight) + 64.dp
+          height = minOf(maxWidth, maxHeight) + 164.dp
         )
       )
     }
 
-    Spacer(modifier = Modifier.height(88.dp))
+    Spacer(modifier = Modifier.height(148.dp))
 
     // The cover above is free to take the full width, but the metadata and transport below are
     // not: on a portrait tablet an 800dp seek bar and a title centred across the same span read
