@@ -132,6 +132,7 @@ fun MiniControlContent(
       Row(
         modifier = Modifier
           .fillMaxWidth()
+          .height(112.dp)
           .clickable(onClick = onNavigateToPlayer)
           .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -167,19 +168,20 @@ fun MiniControlContent(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.trackTextMarquee()
           )
-          Text(
-            text = state.playingTrack.artist.ifEmpty {
-              stringResource(R.string.unknown_artist)
-            },
-            style = MaterialTheme.typography.bodySmall.copy(
-              lineHeight = 16.sp
-            ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.trackTextMarquee()
-          )
+          val artist = state.playingTrack.artist.trim()
+          if (artist.isNotEmpty() && !artist.equals("Unknown Artist", ignoreCase = true)) {
+            Text(
+              text = artist,
+              style = MaterialTheme.typography.bodySmall.copy(
+                lineHeight = 16.sp
+              ),
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              maxLines = 1,
+              softWrap = false,
+              overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.trackTextMarquee()
+            )
+          }
         }
 
         IconButton(onClick = onPreviousClick) {
