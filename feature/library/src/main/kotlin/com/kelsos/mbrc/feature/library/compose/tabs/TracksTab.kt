@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -46,6 +47,7 @@ fun TracksTab(
   viewModel: BrowseTrackViewModel = koinViewModel()
 ) {
   val tracks = viewModel.tracks.collectAsLazyPagingItems()
+  val keyboardController = LocalSoftwareKeyboardController.current
   val showSync by viewModel.showSync.collectAsStateWithLifecycle(initialValue = true)
   val sortPreference by viewModel.sortPreference.collectAsStateWithLifecycle(
     initialValue = SortPreference(TrackSortField.TITLE, SortOrder.ASC)
@@ -84,7 +86,10 @@ fun TracksTab(
   ) { track ->
     TrackListItem(
       track = track,
-      onClick = { viewModel.playAndOpen(track) },
+      onClick = {
+        keyboardController?.hide()
+        viewModel.playAndOpen(track)
+      },
       onQueue = { queue -> viewModel.queue(queue, track) },
       titleOnly = true
     )
