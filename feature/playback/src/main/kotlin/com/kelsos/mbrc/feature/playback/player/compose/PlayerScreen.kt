@@ -893,8 +893,9 @@ private fun QueuePreview(
             } else {
               NowPlayingTrackItem(
                 track = track,
-                isPlaying = isPlaybackActive && track.path == playingTrackPath,
+                isPlaying = track.path == playingTrackPath,
                 isDragging = false,
+                isPlaybackActive = isPlaybackActive && track.path == playingTrackPath,
                 onClick = { onTrackClick(track.position) },
                 onGoToAlbum = null,
                 onGoToArtist = { onGoToArtist(track.artist) },
