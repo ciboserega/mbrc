@@ -104,7 +104,7 @@ class VolumeModifyUseCaseImpl(
   }
 
   companion object {
-    const val VOLUME_STEPS = 22
+    const val VOLUME_STEPS = 32
     const val MAX_VOLUME = 100
     const val MIN_VOLUME = 0
     const val VOLUME_PERCENTAGE = 0.2
