@@ -1240,7 +1240,7 @@ private fun PlaybackControls(playbackState: PlaybackState, actions: IPlayerActio
             Icons.Default.PlayArrow
           },
           contentDescription = stringResource(R.string.main_button_play_pause_description),
-          modifier = Modifier.size(32.dp)
+          modifier = Modifier.size(40.dp)
         )
       }
     }
