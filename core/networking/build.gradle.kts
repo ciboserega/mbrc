@@ -43,6 +43,7 @@ dependencies {
   implementation(libs.bundles.coroutines)
   implementation(libs.koin.android)
   implementation(libs.squareup.moshi.lib)
+  implementation(libs.squareup.okhttp)
   implementation(libs.squareup.okio)
   implementation(libs.timber)
 
