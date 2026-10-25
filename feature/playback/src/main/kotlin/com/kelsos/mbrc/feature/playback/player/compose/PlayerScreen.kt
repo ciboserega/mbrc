@@ -687,6 +687,7 @@ private fun PortraitPlayerLayout(
       // on the same edge as the title and the volume row.
       ProgressSection(
         position = playingPosition,
+        isStopped = playbackState.playerState == PlayerState.Stopped,
         onSeek = actions.seek,
         modifier = Modifier
           .fillMaxWidth()
@@ -821,6 +822,7 @@ private fun LandscapePlayerLayout(
         // Progress bar
         ProgressSection(
           position = playingPosition,
+          isStopped = playbackState.playerState == PlayerState.Stopped,
           onSeek = actions.seek,
           modifier = Modifier.fillMaxWidth()
         )
@@ -1037,6 +1039,7 @@ private fun TrackInfoWithFavorite(
 @Composable
 private fun ProgressSection(
   position: PlayingPosition,
+  isStopped: Boolean,
   onSeek: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -1047,10 +1050,16 @@ private fun ProgressSection(
 
   val isStream = position.isStream
   val totalMs = position.total.toFloat().coerceAtLeast(1f)
-  val currentNormalized = if (isStream) 0f else position.current.toFloat() / totalMs
+  val displayedCurrent = if (isStopped) 0L else position.current
+  val currentNormalized = if (isStream) 0f else displayedCurrent.toFloat() / totalMs
 
-  LaunchedEffect(position.current) {
-    if (!isUserSeeking && !ignoreServerUpdates && !isStream) {
+  LaunchedEffect(position.current, isStopped) {
+    if (isStopped) {
+      // MusicBee can retain the last reported position after Stop; keep the UI at 0:00.
+      sliderPosition = 0f
+      isUserSeeking = false
+      ignoreServerUpdates = false
+    } else if (!isUserSeeking && !ignoreServerUpdates && !isStream) {
       sliderPosition = currentNormalized
     }
   }
@@ -1065,7 +1074,7 @@ private fun ProgressSection(
       )
     } else {
       ThinSlider(
-        value = if (isUserSeeking || ignoreServerUpdates) sliderPosition else currentNormalized,
+        value = if (isStopped) 0f else if (isUserSeeking || ignoreServerUpdates) sliderPosition else currentNormalized,
         onValueChange = {
           isUserSeeking = true
           sliderPosition = it
@@ -1100,7 +1109,7 @@ private fun ProgressSection(
       // proportional digits are not the same width.
       val timeStyle = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum")
       Text(
-        text = position.currentMinutes,
+        text = displayedCurrent.toMinutes(),
         style = timeStyle,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
