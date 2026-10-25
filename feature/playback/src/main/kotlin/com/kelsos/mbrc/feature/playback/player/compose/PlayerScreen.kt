@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -637,11 +638,14 @@ private fun PortraitPlayerLayout(
         isPlaybackActive = playbackState.playerState == PlayerState.Playing,
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
-        modifier = Modifier.size(minOf(maxWidth, maxHeight))
+        modifier = Modifier.requiredSize(
+          width = minOf(maxWidth, maxHeight) + 20.dp,
+          height = minOf(maxWidth, maxHeight) + 32.dp
+        )
       )
     }
 
-    Spacer(modifier = Modifier.height(24.dp))
+    Spacer(modifier = Modifier.height(56.dp))
 
     // The cover above is free to take the full width, but the metadata and transport below are
     // not: on a portrait tablet an 800dp seek bar and a title centred across the same span read
