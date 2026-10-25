@@ -634,6 +634,7 @@ private fun PortraitPlayerLayout(
       QueuePreview(
         tracks = queueTracks,
         playingTrackPath = playingTrack.path,
+        isPlaybackActive = playbackState.playerState == PlayerState.Playing,
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         modifier = Modifier.size(minOf(maxWidth, maxHeight))
@@ -764,6 +765,7 @@ private fun LandscapePlayerLayout(
       QueuePreview(
         tracks = queueTracks,
         playingTrackPath = playingTrack.path,
+        isPlaybackActive = playbackState.playerState == PlayerState.Playing,
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         modifier = Modifier
@@ -845,6 +847,7 @@ private fun LandscapePlayerLayout(
 private fun QueuePreview(
   tracks: LazyPagingItems<NowPlaying>,
   playingTrackPath: String,
+  isPlaybackActive: Boolean,
   onTrackClick: (Int) -> Unit,
   onGoToArtist: (String) -> Unit,
   modifier: Modifier = Modifier
@@ -890,7 +893,7 @@ private fun QueuePreview(
             } else {
               NowPlayingTrackItem(
                 track = track,
-                isPlaying = track.path == playingTrackPath,
+                isPlaying = isPlaybackActive && track.path == playingTrackPath,
                 isDragging = false,
                 onClick = { onTrackClick(track.position) },
                 onGoToAlbum = null,
@@ -1228,9 +1231,9 @@ private fun PlaybackControls(playbackState: PlaybackState, actions: IPlayerActio
           onClick = actions.playPause,
           onLongClick = {
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-            actions.seek(0)
+            actions.stop()
           },
-          onLongClickLabel = stringResource(R.string.main_button_restart_track_description)
+          onLongClickLabel = stringResource(R.string.main_button_stop_description)
         )
     ) {
       Box(contentAlignment = Alignment.Center) {
