@@ -64,41 +64,24 @@ class VolumeModifyUseCaseImpl(
   private suspend fun isMute() = appState.playerStatus.firstOrNull()?.mute == true
 
   override suspend fun increase() {
-    val volume: Int
-    val currentVolume = currentVolume()
-
-    volume =
-      if (currentVolume <= MAX_VOLUME - DEFAULT_STEP) {
-        val mod = currentVolume % DEFAULT_STEP
-        when {
-          mod == MIN_VOLUME -> currentVolume + DEFAULT_STEP
-          mod < HALF_STEP -> currentVolume + (DEFAULT_STEP - mod)
-          else -> currentVolume + (DOUBLE_STEP - mod)
-        }
-      } else {
-        MAX_VOLUME
-      }
-
+    val current = currentVolume().coerceIn(MIN_VOLUME, MAX_VOLUME)
+    val nextStep = (current * VOLUME_STEPS / MAX_VOLUME) + 1
+    val volume = if (nextStep >= VOLUME_STEPS) {
+      MAX_VOLUME
+    } else {
+      (nextStep * MAX_VOLUME + VOLUME_STEPS - 1) / VOLUME_STEPS
+    }
     send(volume)
   }
 
   override suspend fun decrease() {
-    val volume: Int
-    val currentVolume = currentVolume()
-
-    volume =
-      if (currentVolume >= DEFAULT_STEP) {
-        val mod = currentVolume % DEFAULT_STEP
-
-        when {
-          mod == MIN_VOLUME -> currentVolume - DEFAULT_STEP
-          mod < HALF_STEP -> currentVolume - (DEFAULT_STEP + mod)
-          else -> currentVolume - mod
-        }
-      } else {
-        MIN_VOLUME
-      }
-
+    val current = currentVolume().coerceIn(MIN_VOLUME, MAX_VOLUME)
+    val previousStep = ((current * VOLUME_STEPS + MAX_VOLUME - 1) / MAX_VOLUME) - 1
+    val volume = if (previousStep <= 0) {
+      MIN_VOLUME
+    } else {
+      previousStep * MAX_VOLUME / VOLUME_STEPS
+    }
     send(volume)
   }
 
@@ -121,9 +104,7 @@ class VolumeModifyUseCaseImpl(
   }
 
   companion object {
-    const val DEFAULT_STEP = 10
-    const val HALF_STEP = DEFAULT_STEP.div(other = 2)
-    const val DOUBLE_STEP = DEFAULT_STEP.times(other = 2)
+    const val VOLUME_STEPS = 22
     const val MAX_VOLUME = 100
     const val MIN_VOLUME = 0
     const val VOLUME_PERCENTAGE = 0.2
