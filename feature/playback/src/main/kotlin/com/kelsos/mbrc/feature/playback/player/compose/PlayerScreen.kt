@@ -646,7 +646,7 @@ private fun PortraitPlayerLayout(
             // a large empty gap below the queue.
             height = minOf(maxWidth, maxHeight) + 244.dp
           )
-          .offset(y = 16.dp)
+          .offset(y = 100.dp)
       )
     }
 
