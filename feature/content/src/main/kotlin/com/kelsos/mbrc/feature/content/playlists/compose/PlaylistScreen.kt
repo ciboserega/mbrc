@@ -163,10 +163,11 @@ fun PlaylistScreen(
         BrowserItemRow(
           item = item,
           onFolderClick = { viewModel.actions.navigateToFolder(it) },
-          // The title opens the current queue without issuing PlaylistPlay.
-          // Protocol v4 cannot read a playlist's contents without playing it.
+          // Preserve the original behavior: selecting a playlist starts it
+          // in MusicBee and opens the Queue/player screen.
           onPlaylistClick = { url ->
-            viewModel.openPlaylist(item.name, url)
+            viewModel.actions.play(url)
+            onNavigateToPlayer()
           },
           onPlaylistPlay = { viewModel.actions.play(it) }
         )
