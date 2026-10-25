@@ -38,3 +38,5 @@ jobs:
 # Current UI update: Library search icon enlarged from 24dp to 48dp.
 
 # UI update from baseline build 112: NEXT/LAST labels shifted left 8dp; button gap increased 4dp.
+
+# Build fix: import Compose Spacer used for the 4dp NEXT/LAST button gap.
