@@ -34,7 +34,7 @@ class V6PlaylistApi(private val client: V6HttpRpcClient, moshi: Moshi = Moshi.Bu
     require(paths.all { it.isNotBlank() }) { "track paths must not be blank" }
     val payload = buildMap<String, Any> {
       put("url", url)
-      put("tracks", paths)
+      put("paths", paths)
       version?.let { put("version", it) }
     }
     val raw = client.request("playlist_add_tracks", payload)
