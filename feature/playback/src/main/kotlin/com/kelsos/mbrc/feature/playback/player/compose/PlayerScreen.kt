@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -80,6 +82,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
@@ -95,6 +99,7 @@ import com.kelsos.mbrc.core.common.state.Repeat
 import com.kelsos.mbrc.core.common.state.ShuffleMode
 import com.kelsos.mbrc.core.common.state.TrackInfo
 import com.kelsos.mbrc.core.common.state.TrackRating
+import com.kelsos.mbrc.core.data.nowplaying.NowPlaying
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.ui.R as CoreUiR
 import com.kelsos.mbrc.core.ui.compose.ActionItem
@@ -111,6 +116,8 @@ import com.kelsos.mbrc.feature.playback.lyrics.compose.LyricsScreenContent
 import com.kelsos.mbrc.feature.playback.player.IPlayerActions
 import com.kelsos.mbrc.feature.playback.player.PlaybackState
 import com.kelsos.mbrc.feature.playback.player.PlayerViewModel
+import com.kelsos.mbrc.feature.playback.nowplaying.NowPlayingViewModel
+import com.kelsos.mbrc.feature.playback.nowplaying.compose.NowPlayingTrackItem
 import com.kelsos.mbrc.feature.playback.player.VolumeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -132,6 +139,8 @@ fun PlayerScreen(
 ) {
   // Collect separate state flows for granular recomposition
   val playingTrack by viewModel.playingTrack.collectAsStateWithLifecycle()
+  val queueViewModel: NowPlayingViewModel = koinViewModel()
+  val queueTracks = queueViewModel.tracks.collectAsLazyPagingItems()
   val playingPosition by viewModel.playingPosition.collectAsStateWithLifecycle()
   val trackRating by viewModel.trackRating.collectAsStateWithLifecycle()
   val volumeState by viewModel.volumeState.collectAsStateWithLifecycle()
@@ -226,6 +235,8 @@ fun PlayerScreen(
       // layout keeps its content clear of the system bars (#324/#325).
       PlayerScreenContent(
         playingTrack = playingTrack,
+        queueTracks = queueTracks,
+        onQueueTrackClick = { position -> queueViewModel.actions.play(position) },
         playingPosition = playingPosition,
         trackRating = trackRating,
         volumeState = volumeState,
@@ -272,6 +283,8 @@ fun PlayerScreen(
 @Composable
 fun PlayerScreenContent(
   playingTrack: TrackInfo,
+  queueTracks: LazyPagingItems<NowPlaying>,
+  onQueueTrackClick: (Int) -> Unit,
   playingPosition: PlayingPosition,
   trackRating: TrackRating,
   volumeState: VolumeState,
@@ -338,6 +351,8 @@ fun PlayerScreenContent(
         tightSpacing = maxHeight < PlayerConstants.SHORT_HEIGHT_THRESHOLD,
         painter = albumArtState.painter,
         playingTrack = playingTrack,
+        queueTracks = queueTracks,
+        onQueueTrackClick = onQueueTrackClick,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
         isBanned = isBanned,
@@ -359,6 +374,8 @@ fun PlayerScreenContent(
         contentMaxWidth = contentMaxWidth,
         painter = albumArtState.painter,
         playingTrack = playingTrack,
+        queueTracks = queueTracks,
+        onQueueTrackClick = onQueueTrackClick,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
         isBanned = isBanned,
@@ -564,6 +581,8 @@ private fun PortraitPlayerLayout(
   contentMaxWidth: Dp,
   painter: AsyncImagePainter,
   playingTrack: TrackInfo,
+  queueTracks: LazyPagingItems<NowPlaying>,
+  onQueueTrackClick: (Int) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
   isBanned: Boolean,
@@ -606,8 +625,13 @@ private fun PortraitPlayerLayout(
         .padding(horizontal = PlayerConstants.CONTENT_PADDING),
       contentAlignment = Alignment.Center
     ) {
-      // Reserve the original artwork footprint but draw nothing here.
-      Spacer(modifier = Modifier.size(minOf(maxWidth, maxHeight)))
+      QueuePreview(
+        tracks = queueTracks,
+        playingTrackPath = playingTrack.path,
+        onTrackClick = onQueueTrackClick,
+        onGoToArtist = onNavigateToArtist,
+        modifier = Modifier.size(minOf(maxWidth, maxHeight))
+      )
     }
 
     Spacer(modifier = Modifier.height(24.dp))
@@ -689,6 +713,8 @@ private fun LandscapePlayerLayout(
   tightSpacing: Boolean,
   painter: AsyncImagePainter,
   playingTrack: TrackInfo,
+  queueTracks: LazyPagingItems<NowPlaying>,
+  onQueueTrackClick: (Int) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
   isBanned: Boolean,
@@ -728,8 +754,11 @@ private fun LandscapePlayerLayout(
       modifier = Modifier.weight(1f),
       contentAlignment = Alignment.Center
     ) {
-      // Preserve the landscape spacing without displaying album artwork.
-      Spacer(
+      QueuePreview(
+        tracks = queueTracks,
+        playingTrackPath = playingTrack.path,
+        onTrackClick = onQueueTrackClick,
+        onGoToArtist = onNavigateToArtist,
         modifier = Modifier
           .fillMaxHeight(PlayerConstants.LANDSCAPE_ALBUM_HEIGHT_FRACTION)
           .aspectRatio(1f)
@@ -800,6 +829,70 @@ private fun LandscapePlayerLayout(
           onOutputClick = onOutputClick,
           modifier = Modifier.fillMaxWidth()
         )
+      }
+    }
+  }
+}
+
+@Composable
+private fun QueuePreview(
+  tracks: LazyPagingItems<NowPlaying>,
+  playingTrackPath: String,
+  onTrackClick: (Int) -> Unit,
+  onGoToArtist: (String) -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Surface(
+    modifier = modifier,
+    shape = RoundedCornerShape(12.dp),
+    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+  ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+      Text(
+        text = stringResource(R.string.nav_queue),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+      )
+      if (tracks.itemCount == 0) {
+        Box(
+          modifier = Modifier.fillMaxSize(),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(
+            text = stringResource(R.string.now_playing__empty_list),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        }
+      } else {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+          items(
+            count = tracks.itemCount,
+            key = { index -> tracks.peek(index)?.id?.toString() ?: "queue-placeholder-$index" }
+          ) { index ->
+            val track = tracks[index]
+            if (track == null) {
+              Spacer(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .height(56.dp)
+                  .background(MaterialTheme.colorScheme.surface)
+              )
+            } else {
+              NowPlayingTrackItem(
+                track = track,
+                isPlaying = track.path == playingTrackPath,
+                isDragging = false,
+                onClick = { onTrackClick(track.position) },
+                onGoToAlbum = null,
+                onGoToArtist = { onGoToArtist(track.artist) },
+                modifier = Modifier.fillMaxWidth()
+              )
+            }
+          }
+        }
       }
     }
   }
