@@ -386,7 +386,7 @@ private fun DrawerNavigationItem(
     label = {
       Text(
         text = stringResource(item.titleRes),
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
       )
     },
@@ -408,7 +408,7 @@ private fun DrawerNavigationItem(
 private fun SectionLabel(textRes: Int) {
   Text(
     text = stringResource(textRes).uppercase(),
-    style = MaterialTheme.typography.labelSmall,
+    style = MaterialTheme.typography.bodyMedium,
     color = MaterialTheme.colorScheme.onSurfaceVariant,
     fontWeight = FontWeight.Medium,
     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
