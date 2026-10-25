@@ -30,6 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
@@ -327,20 +331,36 @@ private fun LibraryMenuText(text: String, fontSize: TextUnit = 18.sp) {
 }
 
 @Composable
+private fun QueueActionMenuText(action: String, arrow: String) {
+  Text(
+    text = buildAnnotatedString {
+      withStyle(SpanStyle(fontSize = 20.sp)) {
+        append("Queue ")
+      }
+      withStyle(SpanStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)) {
+        append(action)
+      }
+      append(" $arrow")
+    },
+    style = MaterialTheme.typography.bodyLarge
+  )
+}
+
+@Composable
 private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Queue) -> Unit) {
   DropdownMenu(
     expanded = expanded,
     onDismissRequest = onDismiss
   ) {
     DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_queue_next), fontSize = 22.sp) },
+      text = { QueueActionMenuText(action = "NEXT", arrow = "➡️") },
       onClick = {
         onDismiss()
         onQueue(Queue.Next)
       }
     )
     DropdownMenuItem(
-      text = { LibraryMenuText(stringResource(R.string.menu_queue_last), fontSize = 22.sp) },
+      text = { QueueActionMenuText(action = "LAST", arrow = "⬇️") },
       onClick = {
         onDismiss()
         onQueue(Queue.Last)
