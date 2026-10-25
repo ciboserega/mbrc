@@ -13,6 +13,7 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.core.networking.client.DroppedCommandNotice
 import com.kelsos.mbrc.core.networking.client.UiMessage
 import com.kelsos.mbrc.core.networking.client.UiMessageQueue
+import kotlinx.coroutines.delay
 
 private const val PLUGIN_RELEASES_URL = "https://github.com/musicbeeremote/plugin/releases"
 
@@ -34,6 +35,14 @@ fun GlobalUiMessageHandler(
   // lookup is invalidated when the configuration changes.
   val resources = LocalResources.current
 
+  // Keep transient snackbar notices brief; dismiss the visible message after one second.
+  LaunchedEffect(snackbarHostState.currentSnackbarData) {
+    if (snackbarHostState.currentSnackbarData != null) {
+      delay(1_000)
+      snackbarHostState.currentSnackbarData?.dismiss()
+    }
+  }
+
   LaunchedEffect(droppedCommandNotice) {
     droppedCommandNotice.pending.collect { count ->
       if (count == 0) {
@@ -43,7 +52,7 @@ fun GlobalUiMessageHandler(
       // Acknowledged before the snackbar is shown, so anything lost while it is up is counted
       // towards the next one instead of being swallowed.
       droppedCommandNotice.acknowledge()
-      snackbarHostState.showSnackbar(message = text, duration = SnackbarDuration.Long)
+      snackbarHostState.showSnackbar(message = text, duration = SnackbarDuration.Short)
     }
   }
 
