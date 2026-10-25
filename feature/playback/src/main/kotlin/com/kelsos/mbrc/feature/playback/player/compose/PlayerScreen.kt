@@ -642,9 +642,11 @@ private fun PortraitPlayerLayout(
         modifier = Modifier
           .requiredSize(
             width = maxWidth,
-            height = minOf(maxWidth, maxHeight) + 164.dp
+            // Extend the queue panel down toward the track title instead of leaving
+            // a large empty gap below the queue.
+            height = minOf(maxWidth, maxHeight) + 244.dp
           )
-          .offset(y = 0.dp)
+          .offset(y = 16.dp)
       )
     }
 
