@@ -290,7 +290,7 @@ private fun ConnectionStatusIconButton(
     Surface(
       modifier = Modifier.fillMaxSize(),
       shape = CircleShape,
-      color = Color.Gray.copy(alpha = 0.55f)
+      color = Color.White
     ) {}
 
     // Indeterminate spinner when connecting (outer ring)
