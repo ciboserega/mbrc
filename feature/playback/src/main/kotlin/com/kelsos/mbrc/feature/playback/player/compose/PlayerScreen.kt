@@ -644,7 +644,7 @@ private fun PortraitPlayerLayout(
             width = maxWidth,
             height = minOf(maxWidth, maxHeight) + 164.dp
           )
-          .offset(y = 120.dp)
+          .offset(y = 0.dp)
       )
     }
 
