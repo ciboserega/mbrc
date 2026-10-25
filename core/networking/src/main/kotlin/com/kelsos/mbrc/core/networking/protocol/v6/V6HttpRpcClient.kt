@@ -6,6 +6,7 @@ import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -73,9 +74,9 @@ class V6ProtocolException(
 ) : IOException("MusicBee Remote V6 error $code (HTTP $httpStatus): $message")
 
 private fun String.toV6HttpUrl(): HttpUrl {
-  val url = runCatching { HttpUrl.Companion.get(this) }.getOrNull()
+  val url = toHttpUrlOrNull()
     ?: throw IllegalArgumentException("Invalid MusicBee Remote server URL")
-  require(url.isHttps || url.isHttp) { "V6 HTTP-RPC requires an http(s) URL" }
+  require(url.scheme == "http" || url.scheme == "https") { "V6 HTTP-RPC requires an http(s) URL" }
   require(url.encodedPath == "/" || url.encodedPath.isEmpty()) {
     "Pass the server origin only, without an API path"
   }
