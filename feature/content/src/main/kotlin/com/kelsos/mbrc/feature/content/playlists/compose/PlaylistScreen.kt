@@ -163,10 +163,9 @@ fun PlaylistScreen(
         BrowserItemRow(
           item = item,
           onFolderClick = { viewModel.actions.navigateToFolder(it) },
-          // Preserve the original behavior: selecting a playlist starts it
-          // in MusicBee and opens the Queue/player screen.
-          onPlaylistClick = { url ->
-            viewModel.actions.play(url)
+          // Selecting a playlist opens the player screen without starting playback.
+          // Playback remains available from the explicit Play button.
+          onPlaylistClick = {
             onNavigateToPlayer()
           },
           onPlaylistPlay = { viewModel.actions.play(it) }
