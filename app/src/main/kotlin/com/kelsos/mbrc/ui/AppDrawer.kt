@@ -184,7 +184,7 @@ private fun DrawerHeader(
               contentAlignment = Alignment.Center
             ) {
               Image(
-                painter = painterResource(id = R.mipmap.ic_launcher),
+                painter = painterResource(id = R.drawable.cibo_logo),
                 contentDescription = null,
                 modifier = Modifier.size(36.dp)
               )
@@ -290,7 +290,7 @@ private fun ConnectionStatusIconButton(
     Surface(
       modifier = Modifier.fillMaxSize(),
       shape = CircleShape,
-      color = Color.White.copy(alpha = 0.2f)
+      color = Color.Gray.copy(alpha = 0.55f)
     ) {}
 
     // Indeterminate spinner when connecting (outer ring)
@@ -318,7 +318,7 @@ private fun ConnectionStatusIconButton(
       imageVector = statusIcon,
       contentDescription = stringResource(connectionState.contentDescriptionRes()),
       tint = statusColor,
-      modifier = Modifier.size(20.dp)
+      modifier = Modifier.size(24.dp)
     )
   }
 }
