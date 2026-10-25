@@ -631,7 +631,8 @@ private fun PortraitPlayerLayout(
         .widthIn(max = contentMaxWidth)
         .fillMaxWidth()
         .padding(horizontal = PlayerConstants.CONTENT_PADDING),
-      contentAlignment = Alignment.Center
+      // Anchor the queue to the top of its slot; do not center it in leftover space.
+      contentAlignment = Alignment.TopCenter
     ) {
       QueuePreview(
         tracks = queueTracks,
@@ -639,10 +640,12 @@ private fun PortraitPlayerLayout(
         isPlaybackActive = playbackState.playerState == PlayerState.Playing,
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
-        modifier = Modifier.requiredSize(
-          width = minOf(maxWidth, maxHeight) + 20.dp,
-          height = minOf(maxWidth, maxHeight) + 164.dp
-        )
+        modifier = Modifier
+          .requiredSize(
+            width = minOf(maxWidth, maxHeight) + 20.dp,
+            height = minOf(maxWidth, maxHeight) + 164.dp
+          )
+          .offset(y = 24.dp)
       )
     }
 
