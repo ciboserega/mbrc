@@ -744,6 +744,7 @@ fun NowPlayingTrackItem(
   track: NowPlaying,
   isPlaying: Boolean,
   isDragging: Boolean,
+  isPlaybackActive: Boolean = isPlaying,
   onClick: () -> Unit,
   onGoToAlbum: (() -> Unit)?,
   onGoToArtist: () -> Unit,
@@ -794,7 +795,7 @@ fun NowPlayingTrackItem(
         verticalAlignment = Alignment.CenterVertically
       ) {
         // Playing indicator - larger animated audio bars
-        if (isPlaying) {
+        if (isPlaying && isPlaybackActive) {
           AudioBarsIndicator(
             color = MaterialTheme.colorScheme.primary,
             barMaxHeight = 24.dp,
