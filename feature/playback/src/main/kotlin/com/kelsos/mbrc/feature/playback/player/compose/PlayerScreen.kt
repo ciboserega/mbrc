@@ -863,7 +863,7 @@ private fun QueuePreview(
       )
       if (tracks.itemCount == 0) {
         Box(
-          modifier = Modifier.fillMaxSize(),
+          modifier = Modifier.weight(1f).fillMaxWidth(),
           contentAlignment = Alignment.Center
         ) {
           Text(
@@ -873,7 +873,7 @@ private fun QueuePreview(
           )
         }
       } else {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
           items(
             count = tracks.itemCount,
             key = { index -> tracks.peek(index)?.id?.toString() ?: "queue-placeholder-$index" }
