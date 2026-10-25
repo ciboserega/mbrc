@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -865,7 +864,6 @@ private fun LandscapePlayerLayout(
   }
 }
 
-@Composable
 private fun queuePreviewSourceIndex(
   slot: Int,
   dragDropState: DragDropState,
@@ -884,6 +882,7 @@ private fun queuePreviewSourceIndex(
   return if (pagingHasNewOrder) slot else displayedSourceIndex(slot, source, target)
 }
 
+@Composable
 private fun QueuePreview(
   tracks: LazyPagingItems<NowPlaying>,
   playingTrackPath: String,
