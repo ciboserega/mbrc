@@ -314,6 +314,30 @@ fun PlayerScreenContent(
 ) {
   val darkTheme = isSystemInDarkTheme()
   val defaultBackground = MaterialTheme.colorScheme.background
+  var stopAfterCurrentTrack by rememberSaveable { mutableStateOf(false) }
+  var stopRequestedForTrack by rememberSaveable { mutableStateOf("") }
+
+  // Stop playback just before the active track ends so the remote player does not advance
+  // to the next queued track first. Streams with unknown duration are intentionally ignored.
+  LaunchedEffect(
+    stopAfterCurrentTrack,
+    playingTrack.path,
+    playingPosition.current,
+    playingPosition.total,
+    playbackState.playerState
+  ) {
+    if (
+      stopAfterCurrentTrack &&
+      playbackState.playerState == PlayerState.Playing &&
+      playingTrack.path.isNotBlank() &&
+      playingPosition.total > 0 &&
+      playingPosition.current >= playingPosition.total - STOP_BEFORE_END_MS &&
+      stopRequestedForTrack != playingTrack.path
+    ) {
+      stopRequestedForTrack = playingTrack.path
+      actions.stop()
+    }
+  }
 
   // Load album art and extract colors - single image load shared with AlbumCover
   val albumArtState = rememberAlbumArtState(
@@ -378,6 +402,8 @@ fun PlayerScreenContent(
         gradientBrush = gradientBrush,
         contentPadding = contentPadding,
         actions = actions,
+        stopAfterCurrentTrack = stopAfterCurrentTrack,
+        onStopAfterCurrentTrackToggle = { stopAfterCurrentTrack = !stopAfterCurrentTrack },
         onTrackInfoClick = onTrackInfoClick,
         onLyricsClick = onLyricsClick,
         onOutputClick = onOutputClick,
@@ -402,6 +428,8 @@ fun PlayerScreenContent(
         gradientBrush = gradientBrush,
         contentPadding = contentPadding,
         actions = actions,
+        stopAfterCurrentTrack = stopAfterCurrentTrack,
+        onStopAfterCurrentTrackToggle = { stopAfterCurrentTrack = !stopAfterCurrentTrack },
         onTrackInfoClick = onTrackInfoClick,
         onLyricsClick = onLyricsClick,
         onOutputClick = onOutputClick,
@@ -424,6 +452,7 @@ private object PlayerConstants {
   val PORTRAIT_TOP_PADDING = 8.dp
   const val VOLUME_MAX = 100f
   const val SLIDER_DEBOUNCE_MS = 1000L
+  const val STOP_BEFORE_END_MS = 1500L
   val CONTENT_PADDING = 24.dp
 
   /**
@@ -614,6 +643,8 @@ private fun PortraitPlayerLayout(
   onLyricsClick: () -> Unit,
   onOutputClick: () -> Unit,
   onRatingClick: () -> Unit,
+  stopAfterCurrentTrack: Boolean,
+  onStopAfterCurrentTrackToggle: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   Column(
@@ -716,7 +747,9 @@ private fun PortraitPlayerLayout(
       // Playback controls
       PlaybackControls(
         playbackState = playbackState,
-        actions = actions
+        actions = actions,
+        stopAfterCurrentTrack = stopAfterCurrentTrack,
+        onStopAfterCurrentTrackToggle = onStopAfterCurrentTrackToggle
       )
 
       Spacer(modifier = Modifier.height(24.dp))
@@ -758,6 +791,8 @@ private fun LandscapePlayerLayout(
   onLyricsClick: () -> Unit,
   onOutputClick: () -> Unit,
   onRatingClick: () -> Unit,
+  stopAfterCurrentTrack: Boolean,
+  onStopAfterCurrentTrackToggle: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -847,7 +882,9 @@ private fun LandscapePlayerLayout(
         // Playback controls
         PlaybackControls(
           playbackState = playbackState,
-          actions = actions
+          actions = actions,
+          stopAfterCurrentTrack = stopAfterCurrentTrack,
+          onStopAfterCurrentTrackToggle = onStopAfterCurrentTrackToggle
         )
 
         Spacer(modifier = Modifier.height(if (tightSpacing) 8.dp else 24.dp))
@@ -1265,7 +1302,12 @@ private fun VolumeSection(
 }
 
 @Composable
-private fun PlaybackControls(playbackState: PlaybackState, actions: IPlayerActions) {
+private fun PlaybackControls(
+  playbackState: PlaybackState,
+  actions: IPlayerActions,
+  stopAfterCurrentTrack: Boolean,
+  onStopAfterCurrentTrackToggle: () -> Unit
+) {
   Row(
     modifier = Modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -1323,17 +1365,34 @@ private fun PlaybackControls(playbackState: PlaybackState, actions: IPlayerActio
       }
     }
 
-    // Next button - larger
-    IconButton(
-      onClick = actions.next,
-      modifier = Modifier.size(56.dp)
-    ) {
-      Icon(
-        imageVector = Icons.Default.SkipNext,
-        contentDescription = stringResource(R.string.main_button_next_description),
-        tint = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.size(36.dp)
-      )
+    // One-track mode button sits above Next, matching the requested placement.
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+      IconButton(
+        onClick = onStopAfterCurrentTrackToggle,
+        modifier = Modifier.size(32.dp)
+      ) {
+        Text(
+          text = "1",
+          fontWeight = FontWeight.Black,
+          color = if (stopAfterCurrentTrack) {
+            MaterialTheme.colorScheme.primary
+          } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+          },
+          style = MaterialTheme.typography.titleLarge
+        )
+      }
+      IconButton(
+        onClick = actions.next,
+        modifier = Modifier.size(56.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.SkipNext,
+          contentDescription = stringResource(R.string.main_button_next_description),
+          tint = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.size(36.dp)
+        )
+      }
     }
 
     // Repeat button
@@ -1383,3 +1442,4 @@ private fun ShuffleButton(shuffleMode: ShuffleMode, onClick: () -> Unit) {
     }
   }
 }
+
