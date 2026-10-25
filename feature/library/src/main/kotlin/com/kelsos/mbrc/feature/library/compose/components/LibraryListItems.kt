@@ -1,6 +1,7 @@
 package com.kelsos.mbrc.feature.library.compose.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -347,7 +349,12 @@ private fun QueueActionMenuText(action: String, arrow: String) {
 private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Queue) -> Unit) {
   DropdownMenu(
     expanded = expanded,
-    onDismissRequest = onDismiss
+    onDismissRequest = onDismiss,
+    modifier = Modifier.border(
+      width = 2.dp,
+      color = Color.DarkGray,
+      shape = RoundedCornerShape(4.dp)
+    )
   ) {
     DropdownMenuItem(
       modifier = Modifier.padding(vertical = 10.dp),
