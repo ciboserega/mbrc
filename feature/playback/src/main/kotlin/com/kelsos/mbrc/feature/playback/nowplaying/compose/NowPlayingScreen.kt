@@ -792,15 +792,15 @@ fun NowPlayingTrackItem(
           .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        // Playing indicator - animated audio bars
+        // Playing indicator - larger animated audio bars
         if (isPlaying) {
           AudioBarsIndicator(
             color = MaterialTheme.colorScheme.primary,
-            barMaxHeight = 18.dp,
-            modifier = Modifier.size(24.dp)
+            barMaxHeight = 24.dp,
+            modifier = Modifier.size(32.dp)
           )
         } else {
-          Spacer(modifier = Modifier.size(24.dp))
+          Spacer(modifier = Modifier.size(32.dp))
         }
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -815,13 +815,15 @@ fun NowPlayingTrackItem(
             overflow = TextOverflow.Ellipsis,
             color = MaterialTheme.colorScheme.onSurface
           )
-          Text(
-            text = track.artist,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-          )
+          if (track.artist.isNotBlank() && !track.artist.equals("Unknown Artist", ignoreCase = true)) {
+            Text(
+              text = track.artist,
+              style = MaterialTheme.typography.bodyMedium,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
         }
 
         // Overflow menu
