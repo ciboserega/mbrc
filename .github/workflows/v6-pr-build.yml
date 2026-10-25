@@ -40,3 +40,5 @@ jobs:
 # UI update from baseline build 112: NEXT/LAST labels shifted left 8dp; button gap increased 4dp.
 
 # Build fix: import Compose Spacer used for the 4dp NEXT/LAST button gap.
+
+# UI update based on build 121: dismiss snackbar notices after 1s; enlarge drawer labels by two typography steps.
