@@ -137,21 +137,6 @@ fun MiniControlContent(
           .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        if (showCover) {
-          AsyncImage(
-            model = state.playingTrack.coverUrl.ifEmpty { null },
-            contentDescription = stringResource(R.string.description_album_cover),
-            modifier = Modifier
-              .size(48.dp)
-              .clip(RoundedCornerShape(4.dp)),
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(CoreUiR.drawable.ic_image_no_cover),
-            error = painterResource(CoreUiR.drawable.ic_image_no_cover)
-          )
-
-          Spacer(modifier = Modifier.width(12.dp))
-        }
-
         Column(
           modifier = Modifier.weight(1f)
         ) {
