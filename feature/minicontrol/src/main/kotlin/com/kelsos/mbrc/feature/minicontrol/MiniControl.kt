@@ -54,7 +54,7 @@ fun MiniControl(
   onNavigateToPlayer: () -> Unit,
   snackbarHostState: SnackbarHostState,
   modifier: Modifier = Modifier,
-  showCover: Boolean = true,
+  showCover: Boolean = false,
   viewModel: MiniControlViewModel = koinViewModel()
 ) {
   val state by viewModel.state.collectAsStateWithLifecycle(initialValue = MiniControlState())
@@ -92,7 +92,7 @@ fun MiniControlContent(
   onPlayPauseLongClick: () -> Unit,
   onNextClick: () -> Unit,
   modifier: Modifier = Modifier,
-  showCover: Boolean = true
+  showCover: Boolean = false
 ) {
   val isStream = state.playingPosition.isStream
   val progress = if (!isStream && state.playingPosition.total > 0) {
