@@ -628,9 +628,7 @@ private fun PortraitPlayerLayout(
     BoxWithConstraints(
       modifier = Modifier
         .weight(1f, fill = false)
-        .widthIn(max = contentMaxWidth)
-        .fillMaxWidth()
-        .padding(horizontal = PlayerConstants.CONTENT_PADDING),
+        .fillMaxWidth(),
       // Anchor the queue to the top of its slot; do not center it in leftover space.
       contentAlignment = Alignment.TopCenter
     ) {
@@ -642,7 +640,7 @@ private fun PortraitPlayerLayout(
         onGoToArtist = onNavigateToArtist,
         modifier = Modifier
           .requiredSize(
-            width = minOf(maxWidth, maxHeight) + 20.dp,
+            width = maxWidth,
             height = minOf(maxWidth, maxHeight) + 164.dp
           )
           .offset(y = 120.dp)
