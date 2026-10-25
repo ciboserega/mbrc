@@ -3,6 +3,8 @@ package com.kelsos.mbrc.core.ui.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Sealed interface representing the different states of the top app bar.
@@ -94,7 +96,8 @@ data class MenuItem(
 data class ActionItem(
   val icon: ImageVector,
   val contentDescription: String,
-  val onClick: () -> Unit
+  val onClick: () -> Unit,
+  val iconSize: Dp = 24.dp
 )
 
 /**
