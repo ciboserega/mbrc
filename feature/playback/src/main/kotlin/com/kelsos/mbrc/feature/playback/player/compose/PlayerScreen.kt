@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.widthIn
@@ -666,6 +667,9 @@ private fun PortraitPlayerLayout(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = PlayerConstants.CONTENT_PADDING)
+          // Offset the title directly: the oversized queue preview and centered parent
+          // can absorb Spacer changes without visibly moving the title.
+          .offset(y = 60.dp)
       )
 
       // Rating display (optional). Left-aligned with the title above it rather than centred in
