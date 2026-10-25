@@ -353,6 +353,7 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
     onDismissRequest = onDismiss
   ) {
     DropdownMenuItem(
+      modifier = Modifier.padding(vertical = 4.dp),
       text = { QueueActionMenuText(action = "NEXT", arrow = "➡️") },
       onClick = {
         onDismiss()
@@ -360,6 +361,7 @@ private fun TrackItemMenu(expanded: Boolean, onDismiss: () -> Unit, onQueue: (Qu
       }
     )
     DropdownMenuItem(
+      modifier = Modifier.padding(vertical = 4.dp),
       text = { QueueActionMenuText(action = "LAST", arrow = "⬇️") },
       onClick = {
         onDismiss()
