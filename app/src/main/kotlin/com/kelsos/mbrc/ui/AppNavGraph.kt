@@ -230,6 +230,7 @@ fun AppNavGraph(
 
       NowPlayingScreen(
         onOpenDrawer = onOpenDrawer,
+        onNavigateToLibrarySearch = { navController.navigateFrom(entry, Screen.LibrarySearch.route) },
         onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
         onNavigateToAlbum = { path ->
           // The repository lookup runs before the navigate, so this one can resolve long after
