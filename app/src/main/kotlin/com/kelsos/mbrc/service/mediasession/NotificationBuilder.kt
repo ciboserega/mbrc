@@ -51,7 +51,7 @@ class NotificationBuilder(
     if (notificationData.cover != null) {
       builder.setLargeIcon(notificationData.cover)
     } else {
-      val icon = BitmapFactory.decodeResource(context.resources, R.drawable.cibo_logo)
+      val icon = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
       builder.setLargeIcon(icon)
     }
 
