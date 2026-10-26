@@ -79,6 +79,7 @@ fun AppNavGraph(
       )
     }
 
+    // Queue search shortcut opens Library search directly with focus and keyboard.
     // The magnifier on the player enters the same track library in search mode,
     // preserving the existing title-only filters and keyboard behaviour.
     composable(Screen.LibrarySearch.route) { entry ->
