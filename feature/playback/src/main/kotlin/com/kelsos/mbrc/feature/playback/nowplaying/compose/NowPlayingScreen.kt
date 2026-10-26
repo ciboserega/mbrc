@@ -109,6 +109,7 @@ import org.koin.androidx.compose.koinViewModel
 fun NowPlayingScreen(
   onOpenDrawer: () -> Unit,
   onNavigateToPlayer: () -> Unit,
+  onNavigateToLibrarySearch: () -> Unit,
   onNavigateToAlbum: ((path: String) -> Unit)?,
   onNavigateToArtist: (artist: String) -> Unit,
   snackbarHostState: SnackbarHostState,
