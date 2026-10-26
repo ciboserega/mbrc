@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import timber.log.Timber
 
 sealed class PlaylistUiMessages : UiMessageBase {
@@ -63,6 +64,7 @@ class PlaylistActions(
             // Start the full playlist, then immediately stop playback as requested.
             // Keep both remote commands in this coroutine so they are sent in order.
             userActionUseCase.performUserAction(Protocol.PlaylistPlay, url)
+            delay(1_000)
             userActionUseCase.performUserAction(Protocol.PlayerStop, "")
             return@launch // Don't emit anything on success for play action
           } catch (e: IOException) {
