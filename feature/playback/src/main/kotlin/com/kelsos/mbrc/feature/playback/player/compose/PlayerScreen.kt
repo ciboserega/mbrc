@@ -1385,7 +1385,7 @@ private fun PlaybackControls(
         modifier = Modifier
           .size(32.dp)
           .align(Alignment.TopCenter)
-          .offset(x = (-8).dp, y = (-48).dp)
+          .offset(x = (-14).dp, y = (-40).dp)
           .clickable(onClick = onStopAfterCurrentTrackToggle)
       ) {
         Box(contentAlignment = Alignment.Center) {
