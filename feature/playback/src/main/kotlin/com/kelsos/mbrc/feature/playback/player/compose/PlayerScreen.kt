@@ -1290,7 +1290,7 @@ private fun VolumeSection(
     // Output selection button
     IconButton(
       onClick = onOutputClick,
-      modifier = Modifier.size(32.dp).offset(y = (-20).dp)
+      modifier = Modifier.size(32.dp)
     ) {
       Icon(
         imageVector = Icons.Default.SpeakerGroup,
@@ -1370,7 +1370,7 @@ private fun PlaybackControls(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       IconButton(
         onClick = onStopAfterCurrentTrackToggle,
-        modifier = Modifier.size(32.dp)
+        modifier = Modifier.size(32.dp).offset(y = (-20).dp)
       ) {
         Text(
           text = "1",
