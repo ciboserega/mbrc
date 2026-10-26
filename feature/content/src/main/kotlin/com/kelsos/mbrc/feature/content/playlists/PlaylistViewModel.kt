@@ -63,7 +63,7 @@ class PlaylistActions(
             // Start the full playlist, then immediately stop playback as requested.
             // Keep both remote commands in this coroutine so they are sent in order.
             userActionUseCase.performUserAction(Protocol.PlaylistPlay, url)
-            userActionUseCase.performUserAction(Protocol.PlayerStop, "")
+            userActionUseCase.stop()
             return@launch // Don't emit anything on success for play action
           } catch (e: IOException) {
             Timber.e(e)
