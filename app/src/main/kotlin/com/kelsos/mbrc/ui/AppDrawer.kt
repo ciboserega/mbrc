@@ -9,7 +9,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,8 +65,6 @@ import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.ui.theme.connection_status_connected
 import com.kelsos.mbrc.core.ui.theme.connection_status_connecting
 import com.kelsos.mbrc.core.ui.theme.connection_status_offline
-import com.kelsos.mbrc.core.ui.theme.drawer_header_gradient_top_dark
-import com.kelsos.mbrc.core.ui.theme.drawer_header_gradient_top_light
 
 /**
  * Stateless drawer content that can be used in previews and tests.
@@ -135,8 +132,6 @@ private fun DrawerHeader(
   connectionName: String?,
   onConnectionToggle: () -> Unit
 ) {
-  val isDarkTheme = isSystemInDarkTheme()
-
   // Horizontal deep-violet gradient, fading to near-black violet on the right.
   val gradientColors = remember {
     listOf(
@@ -149,7 +144,7 @@ private fun DrawerHeader(
     modifier = Modifier
       .fillMaxWidth()
       .height(130.dp)
-      .background(Brush.verticalGradient(colors = gradientColors))
+      .background(Brush.horizontalGradient(colors = gradientColors))
   ) {
     Column(
       modifier = Modifier
