@@ -80,6 +80,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
+import com.kelsos.mbrc.core.common.state.PlayerState
 import com.kelsos.mbrc.core.data.nowplaying.NowPlaying
 import com.kelsos.mbrc.core.ui.compose.ActionItem
 import com.kelsos.mbrc.core.ui.compose.AudioBarsIndicator
@@ -98,6 +99,7 @@ import com.kelsos.mbrc.feature.playback.R
 import com.kelsos.mbrc.feature.playback.nowplaying.NowPlayingUiMessages
 import com.kelsos.mbrc.feature.playback.nowplaying.NowPlayingViewModel
 import com.kelsos.mbrc.feature.playback.nowplaying.SyncProgress
+import com.kelsos.mbrc.feature.playback.player.PlayerViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -113,6 +115,9 @@ fun NowPlayingScreen(
   viewModel: NowPlayingViewModel = koinViewModel()
 ) {
   val queue = viewModel.tracks.collectAsLazyPagingItems()
+  val playerViewModel: PlayerViewModel = koinViewModel()
+  val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
+  val isPlaybackActive = playbackState.playerState == PlayerState.Playing
   val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
   val playingTrack by viewModel.playingTrack.collectAsStateWithLifecycle()
   val playingTrackIndex by viewModel.playingTrackIndex.collectAsStateWithLifecycle()
@@ -220,6 +225,7 @@ fun NowPlayingScreen(
         trackCount = trackCount,
         isRefreshing = isRefreshing,
         isConnected = isConnected,
+        isPlaybackActive = isPlaybackActive,
         onRefresh = {
           isRefreshing = true
           viewModel.actions.reload()
@@ -382,6 +388,7 @@ internal fun NowPlayingContent(
   trackCount: Int,
   isRefreshing: Boolean,
   isConnected: Boolean,
+  isPlaybackActive: Boolean,
   onRefresh: () -> Unit,
   onTrackClick: (Int) -> Unit,
   onTrackRemove: (Int) -> Unit,
@@ -458,6 +465,7 @@ internal fun NowPlayingContent(
             tracks = tracks,
             playingTrackPath = playingTrackPath,
             isConnected = isConnected,
+            isPlaybackActive = isPlaybackActive,
             isFiltering = isFiltering,
             onTrackClick = onTrackClick,
             onTrackRemove = onTrackRemove,
@@ -506,6 +514,7 @@ private fun NowPlayingTrackList(
   tracks: LazyPagingItems<NowPlaying>,
   playingTrackPath: String,
   isConnected: Boolean,
+  isPlaybackActive: Boolean,
   isFiltering: Boolean,
   onTrackClick: (Int) -> Unit,
   onTrackRemove: (Int) -> Unit,
@@ -572,7 +581,7 @@ private fun NowPlayingTrackList(
             track = track,
             index = srcIdx,
             isPlaying = isPlaying,
-            isDragging = isDragging,
+            isPlaybackActive = isPlaybackActive,            isDragging = isDragging,
             dragDropState = dragDropState,
             onClick = { onTrackClick(if (isFiltering) track.position else srcIdx + 1) },
             onRemove = { onTrackRemove(if (isFiltering) track.position - 1 else srcIdx) },
@@ -583,7 +592,7 @@ private fun NowPlayingTrackList(
           NowPlayingTrackItem(
             track = track,
             isPlaying = isPlaying,
-            isDragging = false,
+            isPlaybackActive = isPlaybackActive,            isDragging = false,
             onClick = { onTrackClick(if (isFiltering) track.position else srcIdx + 1) },
             onGoToAlbum = onGoToAlbum?.let { callback -> { callback(track.path) } },
             onGoToArtist = { onGoToArtist(track.artist) },
@@ -669,6 +678,7 @@ private fun LazyItemScope.SwipeableNowPlayingItem(
   track: NowPlaying,
   index: Int,
   isPlaying: Boolean,
+  isPlaybackActive: Boolean,
   isDragging: Boolean,
   dragDropState: DragDropState,
   onClick: () -> Unit,
@@ -729,7 +739,7 @@ private fun LazyItemScope.SwipeableNowPlayingItem(
     NowPlayingTrackItem(
       track = track,
       isPlaying = isPlaying,
-      isDragging = isDragging,
+      isPlaybackActive = isPlaybackActive,      isDragging = isDragging,
       onClick = onClick,
       onRemove = onRemove,
       onGoToAlbum = onGoToAlbum,
