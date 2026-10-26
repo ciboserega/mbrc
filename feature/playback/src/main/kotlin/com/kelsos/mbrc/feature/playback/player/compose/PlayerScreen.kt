@@ -1366,8 +1366,8 @@ private fun PlaybackControls(
       }
     }
 
-    // Keep Next on the same horizontal line as Previous. The one-track button stays
-    // directly above Next and is moved 20dp higher than its position in build #144.
+    // Keep Next on the same horizontal line as Previous. Relative to build #146,
+    // the one-track button is nudged 8dp left and 8dp down.
     Box(
       modifier = Modifier.size(56.dp),
       contentAlignment = Alignment.Center
