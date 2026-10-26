@@ -50,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -136,19 +137,12 @@ private fun DrawerHeader(
 ) {
   val isDarkTheme = isSystemInDarkTheme()
 
-  // Subtler gradient - less contrast between top and bottom
-  val gradientColors = remember(isDarkTheme) {
-    if (isDarkTheme) {
-      listOf(
-        drawer_header_gradient_top_dark.copy(alpha = 0.9f),
-        drawer_header_gradient_top_dark.copy(alpha = 0.7f)
-      )
-    } else {
-      listOf(
-        drawer_header_gradient_top_light,
-        drawer_header_gradient_top_light.copy(alpha = 0.85f)
-      )
-    }
+  // Horizontal deep-violet gradient, fading to near-black violet on the right.
+  val gradientColors = remember {
+    listOf(
+      Color(0xFF2B123F),
+      Color(0xFF09050F)
+    )
   }
 
   Box(
@@ -228,8 +222,11 @@ private fun DrawerHeader(
             if (statusText != null) {
               Text(
                 text = statusText,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.7f)
+                style = MaterialTheme.typography.bodySmall.copy(
+                  fontSize = MaterialTheme.typography.bodySmall.fontSize * 2
+                ),
+                color = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.offset(y = 2.dp)
               )
             }
           }
