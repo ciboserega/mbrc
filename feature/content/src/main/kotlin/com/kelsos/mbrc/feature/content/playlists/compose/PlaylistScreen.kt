@@ -163,12 +163,15 @@ fun PlaylistScreen(
         BrowserItemRow(
           item = item,
           onFolderClick = { viewModel.actions.navigateToFolder(it) },
-          // Selecting a playlist opens the player screen without starting playback.
-          // Playback remains available from the explicit Play button.
+          // Navigate to Now playing first, then start the selected playlist and stop it.
           onPlaylistClick = {
             onNavigateToPlayer()
+            viewModel.actions.play(it)
           },
-          onPlaylistPlay = { viewModel.actions.play(it) }
+          onPlaylistPlay = {
+            onNavigateToPlayer()
+            viewModel.actions.play(it)
+          }
         )
       }
 
