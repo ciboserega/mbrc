@@ -14,7 +14,6 @@ import com.kelsos.mbrc.core.common.state.PlayerState
 import com.kelsos.mbrc.core.platform.intents.MediaIntentBuilder
 import com.kelsos.mbrc.core.platform.mediasession.NotificationData
 import com.kelsos.mbrc.core.platform.mediasession.RemoteIntentCode
-import com.kelsos.mbrc.core.ui.R as CoreUiR
 
 /**
  * Builds notifications for the media session.
@@ -52,7 +51,7 @@ class NotificationBuilder(
     if (notificationData.cover != null) {
       builder.setLargeIcon(notificationData.cover)
     } else {
-      val icon = BitmapFactory.decodeResource(context.resources, CoreUiR.drawable.ic_image_no_cover)
+      val icon = BitmapFactory.decodeResource(context.resources, R.drawable.cibo_logo)
       builder.setLargeIcon(icon)
     }
 
