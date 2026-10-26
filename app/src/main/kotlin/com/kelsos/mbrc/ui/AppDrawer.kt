@@ -218,7 +218,7 @@ private fun DrawerHeader(
               Text(
                 text = statusText,
                 style = MaterialTheme.typography.bodySmall.copy(
-                  fontSize = MaterialTheme.typography.bodySmall.fontSize * 2
+                  fontSize = MaterialTheme.typography.bodySmall.fontSize * 1.8
                 ),
                 color = Color.White.copy(alpha = 0.7f),
                 modifier = Modifier.offset(y = 2.dp)
