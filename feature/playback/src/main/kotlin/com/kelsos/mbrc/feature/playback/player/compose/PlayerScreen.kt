@@ -258,7 +258,7 @@ fun PlayerScreen(
         actions = viewModel.actions,
         hasLyrics = lyrics.isNotEmpty(),
         showRatingOnPlayer = showRatingOnPlayer,
-        onTrackInfoClick = onNavigateToNowPlaying,
+        onTrackInfoClick = onNavigateToLibrarySearch,
         onLyricsClick = { showLyrics = true },
         onOutputClick = { showOutputSelection = true },
         onRatingClick = { showBottomSheet = true }
@@ -1290,7 +1290,7 @@ private fun VolumeSection(
     // Output selection button
     IconButton(
       onClick = onOutputClick,
-      modifier = Modifier.size(32.dp)
+      modifier = Modifier.size(32.dp).offset(y = (-20).dp)
     ) {
       Icon(
         imageVector = Icons.Default.SpeakerGroup,
