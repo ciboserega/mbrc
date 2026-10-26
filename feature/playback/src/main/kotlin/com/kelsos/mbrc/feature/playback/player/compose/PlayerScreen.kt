@@ -1366,26 +1366,40 @@ private fun PlaybackControls(
       }
     }
 
-    // One-track mode button sits above Next, matching the requested placement.
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-      IconButton(
-        onClick = onStopAfterCurrentTrackToggle,
-        modifier = Modifier.size(32.dp).offset(y = (-20).dp)
+    // Keep Next on the same horizontal line as Previous. The one-track button stays
+    // directly above Next and is moved 20dp higher than its position in build #144.
+    Box(
+      modifier = Modifier.size(56.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      val oneTrackColor = if (stopAfterCurrentTrack) {
+        MaterialTheme.colorScheme.primary
+      } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+      }
+      Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = Color.Transparent,
+        contentColor = oneTrackColor,
+        border = BorderStroke(2.dp, oneTrackColor),
+        modifier = Modifier
+          .size(32.dp)
+          .align(Alignment.TopCenter)
+          .offset(y = (-56).dp)
+          .clickable(onClick = onStopAfterCurrentTrackToggle)
       ) {
-        Text(
-          text = "1",
-          fontWeight = FontWeight.Black,
-          color = if (stopAfterCurrentTrack) {
-            MaterialTheme.colorScheme.primary
-          } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-          },
-          style = MaterialTheme.typography.titleLarge
-        )
+        Box(contentAlignment = Alignment.Center) {
+          Text(
+            text = "1",
+            fontWeight = FontWeight.Black,
+            color = oneTrackColor,
+            style = MaterialTheme.typography.titleLarge
+          )
+        }
       }
       IconButton(
         onClick = actions.next,
-        modifier = Modifier.size(56.dp)
+        modifier = Modifier.align(Alignment.Center).size(56.dp)
       ) {
         Icon(
           imageVector = Icons.Default.SkipNext,
