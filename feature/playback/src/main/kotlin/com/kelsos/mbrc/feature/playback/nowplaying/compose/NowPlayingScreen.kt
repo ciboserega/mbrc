@@ -190,7 +190,8 @@ fun NowPlayingScreen(
         ActionItem(
           icon = Icons.Default.Search,
           contentDescription = searchPlaceholder,
-          onClick = { isSearchActive = true }
+          onClick = onNavigateToLibrarySearch,
+          iconSize = 48.dp
         )
       )
     }
