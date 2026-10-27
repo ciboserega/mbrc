@@ -231,12 +231,12 @@ class NowPlayingViewModel(
       viewModelScope.launch(dispatchers.network) {
         try {
           selfMutationTracker.mark()
-          // The MusicBee plugin adjusts the destination by -1 when moving a
-          // track upward. Compensate here so the final slot matches the UI.
-          val remoteDestination =
-            if (originalPosition > finalPosition) finalPosition + 1 else finalPosition
+          // Send the same zero-based destination slot used by the UI. The
+          // MusicBee plugin alone converts it to the host API's "move after"
+          // index; compensating here as well causes adjacent upward moves to
+          // lose their direction (from == to at the plugin boundary).
           userActionUseCase.moveTrack(
-            NowPlayingMoveRequest(originalPosition, remoteDestination)
+            NowPlayingMoveRequest(originalPosition, finalPosition)
           )
           repository.move(originalPosition + 1, finalPosition + 1)
         } catch (e: IOException) {
