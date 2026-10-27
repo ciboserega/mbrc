@@ -4,6 +4,8 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Box
@@ -794,12 +796,14 @@ fun NowPlayingTrackItem(
       modifier = Modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
-        .combinedClickable(
-          onClick = onClick,
-          onLongClick = {
-            if (showOverflowMenu) showMenu = true
-          }
-        )
+        .pointerInput(showOverflowMenu) {
+          detectTapGestures(
+            onTap = { onClick() },
+            onLongPress = {
+              if (showOverflowMenu) showMenu = true
+            }
+          )
+        }
     ) {
       // Left accent bar - always reserve space, colored when playing
       Box(
