@@ -2,6 +2,8 @@ package com.kelsos.mbrc.feature.playback.nowplaying.compose
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Box
@@ -754,6 +756,7 @@ private fun LazyItemScope.SwipeableNowPlayingItem(
   }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NowPlayingTrackItem(
   track: NowPlaying,
@@ -830,7 +833,11 @@ fun NowPlayingTrackItem(
             fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Normal,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.combinedClickable(
+              onClick = onClick,
+              onLongClick = { showMenu = true }
+            )
           )
           if (track.artist.isNotBlank() && !track.artist.equals("Unknown Artist", ignoreCase = true)) {
             Text(
