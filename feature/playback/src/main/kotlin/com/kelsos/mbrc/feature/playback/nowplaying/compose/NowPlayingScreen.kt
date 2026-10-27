@@ -785,7 +785,14 @@ fun NowPlayingTrackItem(
   }
 
   Card(
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier
+      .combinedClickable(
+        onClick = onClick,
+        onLongClick = {
+          if (showOverflowMenu) showMenu = true
+        }
+      )
+      .fillMaxWidth(),
     elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     colors = CardDefaults.cardColors(containerColor = backgroundColor),
     shape = RoundedCornerShape(0.dp)
@@ -794,12 +801,6 @@ fun NowPlayingTrackItem(
       modifier = Modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
-        .combinedClickable(
-          onClick = onClick,
-          onLongClick = {
-            if (showOverflowMenu && onRemove != null) showMenu = true
-          }
-        )
     ) {
       // Left accent bar - always reserve space, colored when playing
       Box(
