@@ -794,6 +794,12 @@ fun NowPlayingTrackItem(
       modifier = Modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
+        .combinedClickable(
+          onClick = onClick,
+          onLongClick = {
+            if (showOverflowMenu) showMenu = true
+          }
+        )
     ) {
       // Left accent bar - always reserve space, colored when playing
       Box(
@@ -824,18 +830,8 @@ fun NowPlayingTrackItem(
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        // Track info owns click and long-press gestures. Keep them away from
-        // the overflow button and drag handle, which have their own touch handling.
-        Column(
-          modifier = Modifier
-            .weight(1f)
-            .combinedClickable(
-              onClick = onClick,
-              onLongClick = {
-                if (showOverflowMenu) showMenu = true
-              }
-            )
-        ) {
+        // The entire row handles selection and long-press; drag handle keeps its own gesture.
+        Column(modifier = Modifier.weight(1f)) {
           Text(
             text = track.title,
             style = MaterialTheme.typography.bodyLarge,
