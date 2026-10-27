@@ -751,7 +751,8 @@ private fun LazyItemScope.SwipeableNowPlayingItem(
       onRemove = onRemove,
       onGoToAlbum = onGoToAlbum,
       onGoToArtist = onGoToArtist,
-      dragHandleModifier = Modifier.dragHandle(dragDropState, index)
+      dragHandleModifier = Modifier.dragHandle(dragDropState, index),
+      showRemoveTrack = true
     )
   }
 }
@@ -769,7 +770,8 @@ fun NowPlayingTrackItem(
   modifier: Modifier = Modifier,
   dragHandleModifier: Modifier = Modifier,
   onRemove: (() -> Unit)? = null,
-  showOverflowMenu: Boolean = true
+  showOverflowMenu: Boolean = true,
+  showRemoveTrack: Boolean = onRemove != null
 ) {
   var showMenu by remember { mutableStateOf(false) }
 
@@ -894,7 +896,7 @@ fun NowPlayingTrackItem(
                 onGoToArtist()
               }
             )
-            if (onRemove != null) {
+            if (showRemoveTrack && onRemove != null) {
               DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_remove_track)) },
                 leadingIcon = {
