@@ -796,14 +796,6 @@ fun NowPlayingTrackItem(
       modifier = Modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
-        .pointerInput(showOverflowMenu) {
-          detectTapGestures(
-            onTap = { onClick() },
-            onLongPress = {
-              if (showOverflowMenu) showMenu = true
-            }
-          )
-        }
     ) {
       // Left accent bar - always reserve space, colored when playing
       Box(
@@ -818,6 +810,14 @@ fun NowPlayingTrackItem(
       Row(
         modifier = Modifier
           .weight(1f)
+          .pointerInput(showOverflowMenu) {
+            detectTapGestures(
+              onTap = { onClick() },
+              onLongPress = {
+                if (showOverflowMenu) showMenu = true
+              }
+            )
+          }
           .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
