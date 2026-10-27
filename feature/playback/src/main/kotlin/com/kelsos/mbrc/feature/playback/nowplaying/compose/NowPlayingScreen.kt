@@ -785,8 +785,14 @@ fun NowPlayingTrackItem(
   }
 
   Card(
-    onClick = onClick,
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier
+      .fillMaxWidth()
+      .combinedClickable(
+        onClick = onClick,
+        onLongClick = {
+          if (showOverflowMenu && onRemove != null) showMenu = true
+        }
+      ),
     elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     colors = CardDefaults.cardColors(containerColor = backgroundColor),
     shape = RoundedCornerShape(0.dp)
@@ -833,11 +839,7 @@ fun NowPlayingTrackItem(
             fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Normal,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.combinedClickable(
-              onClick = onClick,
-              onLongClick = { showMenu = true }
-            )
+            color = MaterialTheme.colorScheme.onSurface
           )
           if (track.artist.isNotBlank() && !track.artist.equals("Unknown Artist", ignoreCase = true)) {
             Text(
