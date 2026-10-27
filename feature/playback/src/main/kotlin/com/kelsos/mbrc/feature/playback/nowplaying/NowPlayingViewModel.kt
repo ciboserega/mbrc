@@ -231,7 +231,13 @@ class NowPlayingViewModel(
       viewModelScope.launch(dispatchers.network) {
         try {
           selfMutationTracker.mark()
-          userActionUseCase.moveTrack(NowPlayingMoveRequest(originalPosition, finalPosition))
+          // The MusicBee plugin adjusts the destination by -1 when moving a
+          // track upward. Compensate here so the final slot matches the UI.
+          val remoteDestination =
+            if (originalPosition > finalPosition) finalPosition + 1 else finalPosition
+          userActionUseCase.moveTrack(
+            NowPlayingMoveRequest(originalPosition, remoteDestination)
+          )
           repository.move(originalPosition + 1, finalPosition + 1)
         } catch (e: IOException) {
           Timber.e(e)
