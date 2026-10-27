@@ -785,8 +785,7 @@ fun NowPlayingTrackItem(
   }
 
   Card(
-    modifier = modifier
-      .fillMaxWidth()
+    modifier = modifier.fillMaxWidth(),
     elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     colors = CardDefaults.cardColors(containerColor = backgroundColor),
     shape = RoundedCornerShape(0.dp)
