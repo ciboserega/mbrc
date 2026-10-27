@@ -4,8 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Box
@@ -810,14 +808,12 @@ fun NowPlayingTrackItem(
       Row(
         modifier = Modifier
           .weight(1f)
-          .pointerInput(showOverflowMenu) {
-            detectTapGestures(
-              onTap = { onClick() },
-              onLongPress = {
-                if (showOverflowMenu) showMenu = true
-              }
-            )
-          }
+          .combinedClickable(
+            onClick = onClick,
+            onLongClick = {
+              if (showOverflowMenu) showMenu = true
+            }
+          )
           .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
