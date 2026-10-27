@@ -808,12 +808,6 @@ fun NowPlayingTrackItem(
       Row(
         modifier = Modifier
           .weight(1f)
-          .combinedClickable(
-            onClick = onClick,
-            onLongClick = {
-              if (showOverflowMenu) showMenu = true
-            }
-          )
           .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
@@ -830,8 +824,18 @@ fun NowPlayingTrackItem(
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        // Track info
-        Column(modifier = Modifier.weight(1f)) {
+        // Track info owns click and long-press gestures. Keep them away from
+        // the overflow button and drag handle, which have their own touch handling.
+        Column(
+          modifier = Modifier
+            .weight(1f)
+            .combinedClickable(
+              onClick = onClick,
+              onLongClick = {
+                if (showOverflowMenu) showMenu = true
+              }
+            )
+        ) {
           Text(
             text = track.title,
             style = MaterialTheme.typography.bodyLarge,
