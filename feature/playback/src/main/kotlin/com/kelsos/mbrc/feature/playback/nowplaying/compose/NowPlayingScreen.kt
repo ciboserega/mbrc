@@ -751,8 +751,7 @@ private fun LazyItemScope.SwipeableNowPlayingItem(
       onRemove = onRemove,
       onGoToAlbum = onGoToAlbum,
       onGoToArtist = onGoToArtist,
-      dragHandleModifier = Modifier.dragHandle(dragDropState, index),
-      showRemoveTrack = true
+      dragHandleModifier = Modifier.dragHandle(dragDropState, index)
     )
   }
 }
@@ -895,21 +894,19 @@ fun NowPlayingTrackItem(
                 onGoToArtist()
               }
             )
-            {
-              DropdownMenuItem(
-                text = { Text(stringResource(R.string.menu_remove_track)) },
-                leadingIcon = {
-                  Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = null
-                  )
-                },
-                onClick = {
-                  showMenu = false
-                  onRemove?.invoke()
-                }
-              )
-            }
+            DropdownMenuItem(
+              text = { Text(stringResource(R.string.menu_remove_track)) },
+              leadingIcon = {
+                Icon(
+                  imageVector = Icons.Default.Delete,
+                  contentDescription = null
+                )
+              },
+              onClick = {
+                showMenu = false
+                onRemove?.invoke()
+              }
+            )
           }
         }
         }
