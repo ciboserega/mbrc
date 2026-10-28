@@ -216,7 +216,7 @@ fun LibraryScreen(
     Column(
       modifier = Modifier
         .align(Alignment.BottomEnd)
-        .padding(end = 16.dp, bottom = 354.dp),
+        .padding(end = 16.dp, bottom = 294.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       LibraryShortcutButton(label = "Q", onClick = onNavigateToQueue)
