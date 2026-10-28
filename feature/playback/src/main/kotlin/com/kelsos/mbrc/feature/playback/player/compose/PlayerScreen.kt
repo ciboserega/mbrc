@@ -637,6 +637,7 @@ private fun PortraitPlayerLayout(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onRequestRemoveTrack: (Int) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
@@ -688,6 +689,7 @@ private fun PortraitPlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onRequestRemoveTrack = onRequestRemoveTrack,
         onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
           .requiredSize(
@@ -788,6 +790,7 @@ private fun LandscapePlayerLayout(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onRequestRemoveTrack: (Int) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
@@ -837,6 +840,7 @@ private fun LandscapePlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
           .fillMaxHeight(PlayerConstants.LANDSCAPE_ALBUM_HEIGHT_FRACTION)
           .aspectRatio(1f)
