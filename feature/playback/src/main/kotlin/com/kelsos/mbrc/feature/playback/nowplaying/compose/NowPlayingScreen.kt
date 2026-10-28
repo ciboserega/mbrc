@@ -779,7 +779,6 @@ fun NowPlayingTrackItem(
     targetValue = if (isDragging) 8.dp else 0.dp,
     label = "drag_elevation"
   )
-
   val backgroundColor = if (isPlaying) {
     MaterialTheme.colorScheme.surfaceContainerHighest
   } else {
@@ -798,138 +797,83 @@ fun NowPlayingTrackItem(
           .fillMaxWidth()
           .height(IntrinsicSize.Min)
       ) {
-      // Left accent bar - always reserve space, colored when playing
-      Box(
-        modifier = Modifier
-          .width(4.dp)
-          .fillMaxHeight()
-          .background(
-            if (isPlaying) MaterialTheme.colorScheme.primary else Color.Transparent
-          )
-      )
-
-      Row(
-        modifier = Modifier
-          .weight(1f)
-          .combinedClickable(
-            onClick = onClick,
-            onLongClick = {
-              if (showOverflowMenu) showMenu = true
-            }
-          )
-          .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        // Playing indicator - larger animated audio bars
-        if (isPlaying && isPlaybackActive) {
-          AudioBarsIndicator(
-            color = MaterialTheme.colorScheme.primary,
-            barMaxHeight = 20.dp,
-            modifier = Modifier.size(20.dp)
-          )
-        } else {
-          Spacer(modifier = Modifier.size(20.dp))
-        }
-
-        Spacer(modifier = Modifier.width(4.dp))
-
-        // The entire row handles selection and long-press; drag handle keeps its own gesture.
-        Column(modifier = Modifier.weight(1f)) {
-          Text(
-            text = track.title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Normal,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurface
-          )
-          if (track.artist.isNotBlank() && !track.artist.equals("Unknown Artist", ignoreCase = true)) {
-            Text(
-              text = track.artist,
-              style = MaterialTheme.typography.bodyMedium,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          }
-        }
-
-        // Overflow menu
-        if (showOverflowMenu) {
-          Box {
-          IconButton(onClick = { showMenu = true }) {
-            Icon(
-              imageVector = Icons.Default.MoreVert,
-              contentDescription = stringResource(R.string.menu_overflow_description),
-              tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          }
-
- {
-            if (onGoToAlbum != null) {
-              DropdownMenuItem(
-                text = { Text(stringResource(R.string.player_go_to_album)) },
-                leadingIcon = {
-                  Icon(
-                    imageVector = Icons.Default.Album,
-                    contentDescription = null
-                  )
-                },
-                onClick = {
-                  showMenu = false
-                  onGoToAlbum()
-                }
-              )
-            }
-            DropdownMenuItem(
-              text = { Text(stringResource(R.string.player_go_to_artist)) },
-              leadingIcon = {
-                Icon(
-                  imageVector = Icons.Default.Person,
-                  contentDescription = null
-                )
-              },
-              onClick = {
-                showMenu = false
-                onGoToArtist()
-              }
-            )
-            DropdownMenuItem(
-              text = { Text(stringResource(R.string.menu_remove_track)) },
-              leadingIcon = {
-                Icon(
-                  imageVector = Icons.Default.Delete,
-                  contentDescription = null
-                )
-              },
-              onClick = {
-                showMenu = false
-                onRemove?.invoke()
-              }
-            )
-          }
-        }
-        }
-
-        // Drag handle — 48dp touch target wraps a 24dp icon. The handle owns
-        // the long-press-drag gesture so it never competes with row-level
-        // swipe-to-dismiss or vertical scroll.
         Box(
           modifier = Modifier
-            .size(48.dp)
-            .then(dragHandleModifier),
-          contentAlignment = Alignment.Center
+            .width(4.dp)
+            .fillMaxHeight()
+            .background(
+              if (isPlaying) MaterialTheme.colorScheme.primary else Color.Transparent
+            )
+        )
+
+        Row(
+          modifier = Modifier
+            .weight(1f)
+            .combinedClickable(
+              onClick = onClick,
+              onLongClick = {
+                if (showOverflowMenu) showMenu = true
+              }
+            )
+            .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
+          verticalAlignment = Alignment.CenterVertically
         ) {
-          Icon(
-            imageVector = Icons.Default.DragIndicator,
-            contentDescription = stringResource(R.string.now_playing__drag_handle),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(24.dp)
-          )
+          if (isPlaying && isPlaybackActive) {
+            AudioBarsIndicator(
+              color = MaterialTheme.colorScheme.primary,
+              barMaxHeight = 20.dp,
+              modifier = Modifier.size(20.dp)
+            )
+          } else {
+            Spacer(modifier = Modifier.size(20.dp))
+          }
+          Spacer(modifier = Modifier.width(4.dp))
+
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = track.title,
+              style = MaterialTheme.typography.bodyLarge,
+              fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Normal,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            if (track.artist.isNotBlank() && !track.artist.equals("Unknown Artist", ignoreCase = true)) {
+              Text(
+                text = track.artist,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
+
+          if (showOverflowMenu) {
+            IconButton(onClick = { showMenu = true }) {
+              Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.menu_overflow_description),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
+
+          Box(
+            modifier = Modifier
+              .size(48.dp)
+              .then(dragHandleModifier),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.DragIndicator,
+              contentDescription = stringResource(R.string.now_playing__drag_handle),
+              tint = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.size(24.dp)
+            )
+          }
         }
       }
-    }
-  }
 
       DropdownMenu(
         expanded = showMenu,
@@ -957,18 +901,21 @@ fun NowPlayingTrackItem(
             onGoToArtist()
           }
         )
-        DropdownMenuItem(
-          text = { Text(stringResource(R.string.menu_remove_track)) },
-          leadingIcon = {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-          },
-          onClick = {
-            showMenu = false
-            onRemove?.invoke()
-          }
-        )
+        if (showRemoveTrack) {
+          DropdownMenuItem(
+            text = { Text(stringResource(R.string.menu_remove_track)) },
+            leadingIcon = {
+              Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+            },
+            onClick = {
+              showMenu = false
+              onRemove?.invoke()
+            }
+          )
+        }
       }
     }
+  }
 }
 
 private const val NOW_PLAYING_LIST_ID = "nowplaying"
