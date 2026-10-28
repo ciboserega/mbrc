@@ -55,8 +55,8 @@ fun AppNavGraph(
         onNavigateToNowPlaying = {
           navController.navigateFrom(entry, Screen.NowPlayingList.route)
         },
-        onRequestRemoveTrack = { position ->
-          entry.savedStateHandle["pendingRemovePosition"] = position
+        onRequestRemoveTrack = { trackPath ->
+          entry.savedStateHandle["pendingRemovePath"] = trackPath
           navController.navigateFrom(entry, Screen.NowPlayingList.route)
         },
         onNavigateToAlbum = { album, artist ->
@@ -233,15 +233,15 @@ fun AppNavGraph(
       val scope = rememberCoroutineScope()
       val trackNotFoundMessage = stringResource(R.string.navigation_track_not_in_library)
 
-      val pendingRemovePosition = navController.previousBackStackEntry
-        ?.savedStateHandle?.get<Int>("pendingRemovePosition")
+      val pendingRemovePath = navController.previousBackStackEntry
+        ?.savedStateHandle?.get<String>("pendingRemovePath")
       NowPlayingScreen(
         onOpenDrawer = onOpenDrawer,
         onNavigateToLibrarySearch = { navController.navigateFrom(entry, Screen.LibrarySearch.route) },
         onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
-        pendingRemovePosition = pendingRemovePosition,
+        pendingRemovePath = pendingRemovePath,
         onPendingRemoveComplete = {
-          navController.previousBackStackEntry?.savedStateHandle?.remove<Int>("pendingRemovePosition")
+          navController.previousBackStackEntry?.savedStateHandle?.remove<String>("pendingRemovePath")
           navController.popBackStack()
         },
         onNavigateToAlbum = { path ->
