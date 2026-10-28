@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +49,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -245,7 +247,8 @@ fun NowPlayingScreen(
     onOpenDrawer = onOpenDrawer,
     actionItems = actionItems
   ) { paddingValues ->
-    Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+    Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+      Column(modifier = Modifier.fillMaxSize()) {
       SyncProgressBar(syncProgress)
 
       NowPlayingContent(
@@ -275,6 +278,64 @@ fun NowPlayingScreen(
         onNavigateToPlayer = onNavigateToPlayer,
         snackbarHostState = snackbarHostState
       )
+      }
+
+      Column(
+        modifier = Modifier
+          .align(Alignment.BottomEnd)
+          .padding(end = 16.dp, bottom = 184.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        QueueShortcutButton(
+          label = "L",
+          onClick = onNavigateToLibrarySearch
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        QueueShortcutButton(
+          iconPlay = true,
+          onClick = onNavigateToPlayer
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun QueueShortcutButton(
+  label: String? = null,
+  iconPlay: Boolean = false,
+  onClick: () -> Unit
+) {
+  Surface(
+    modifier = Modifier
+      .size(56.dp)
+      .background(Color.Transparent)
+      .clickable(onClick = onClick),
+    shape = RoundedCornerShape(50),
+    color = Color.DarkGray.copy(alpha = 0.72f),
+    tonalElevation = 0.dp,
+    shadowElevation = 0.dp,
+    border = androidx.compose.foundation.BorderStroke(
+      2.dp,
+      Color.LightGray.copy(alpha = 0.45f)
+    )
+  ) {
+    Box(contentAlignment = Alignment.Center) {
+      if (iconPlay) {
+        Icon(
+          imageVector = Icons.Default.PlayArrow,
+          contentDescription = "Now Playing",
+          tint = Color.LightGray,
+          modifier = Modifier.size(34.dp)
+        )
+      } else {
+        Text(
+          text = label.orEmpty(),
+          color = Color.LightGray,
+          style = MaterialTheme.typography.titleLarge,
+          fontWeight = FontWeight.Bold
+        )
+      }
     }
   }
 }
