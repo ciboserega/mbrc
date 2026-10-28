@@ -593,7 +593,7 @@ private fun NowPlayingTrackList(
               // MusicBee's play/remove commands use one-based queue positions.
               // The displayed queue slot is zero-based, while filtered rows keep
               // the original one-based position reported by the track.
-              onTrackRemove(if (isFiltering) track.position else srcIdx + 1)
+              onTrackRemove(if (isFiltering) track.position - 1 else srcIdx)
             },
             onGoToAlbum = onGoToAlbum?.let { callback -> { callback(track.path) } },
             onGoToArtist = { onGoToArtist(track.artist) }
