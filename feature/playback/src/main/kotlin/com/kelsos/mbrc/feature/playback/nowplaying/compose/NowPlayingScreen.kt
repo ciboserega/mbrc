@@ -896,7 +896,7 @@ fun NowPlayingTrackItem(
                 onGoToArtist()
               }
             )
-            if (showRemoveTrack && onRemove != null) {
+            if (showRemoveTrack) {
               DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_remove_track)) },
                 leadingIcon = {
@@ -907,7 +907,7 @@ fun NowPlayingTrackItem(
                 },
                 onClick = {
                   showMenu = false
-                  onRemove()
+                  onRemove?.invoke()
                 }
               )
             }
