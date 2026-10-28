@@ -690,7 +690,6 @@ private fun PortraitPlayerLayout(
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
         onRequestRemoveTrack = onRequestRemoveTrack,
-        onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
           .requiredSize(
             width = maxWidth,
