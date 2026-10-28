@@ -1019,6 +1019,7 @@ private fun QueuePreview(
           }
         }
       }
+      }
       Surface(
         modifier = Modifier
           .align(Alignment.BottomEnd)
