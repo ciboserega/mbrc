@@ -160,9 +160,9 @@ fun NowPlayingScreen(
       if (actualIndex != null) {
         pendingRemoveStarted = true
         viewModel.actions.removeTrack(actualIndex)
-        kotlinx.coroutines.delay(900)
+        // Allow MusicBee to process the removal before returning to the player.
+        kotlinx.coroutines.delay(500)
         queue.refresh()
-        kotlinx.coroutines.delay(300)
         onPendingRemoveComplete()
       }
     }
