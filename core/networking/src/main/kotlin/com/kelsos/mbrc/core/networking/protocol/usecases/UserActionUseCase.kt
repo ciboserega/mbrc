@@ -6,6 +6,7 @@ import com.kelsos.mbrc.core.networking.client.SocketMessage
 import com.kelsos.mbrc.core.networking.protocol.actions.UserAction
 import com.kelsos.mbrc.core.networking.protocol.base.Protocol
 import com.kelsos.mbrc.core.networking.protocol.payloads.NowPlayingMoveRequest
+import com.kelsos.mbrc.core.networking.protocol.payloads.NowPlayingRemoveRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -25,7 +26,7 @@ suspend fun UserActionUseCase.moveTrack(request: NowPlayingMoveRequest) {
 }
 
 suspend fun UserActionUseCase.removeTrack(position: Int) {
-  perform(UserAction(Protocol.NowPlayingListRemove, position))
+  perform(UserAction(Protocol.NowPlayingListRemove, NowPlayingRemoveRequest(orders = listOf(position))))
 }
 
 suspend fun UserActionUseCase.playTrack(position: Int) {
