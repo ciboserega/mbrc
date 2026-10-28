@@ -141,6 +141,7 @@ import org.koin.compose.koinInject
 fun PlayerScreen(
   onNavigateToLibrarySearch: () -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onRequestRemoveTrack: (Int) -> Unit,
   onNavigateToAlbum: (album: String, artist: String) -> Unit,
   onNavigateToArtist: (artist: String) -> Unit,
   snackbarHostState: SnackbarHostState,
@@ -251,6 +252,7 @@ fun PlayerScreen(
         queueTracks = queueTracks,
         onQueueTrackClick = { position -> queueViewModel.actions.play(position) },
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onRequestRemoveTrack = onRequestRemoveTrack,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
         trackRating = trackRating,
@@ -301,6 +303,7 @@ fun PlayerScreenContent(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onRequestRemoveTrack: (Int) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   trackRating: TrackRating,
@@ -685,6 +688,7 @@ private fun PortraitPlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
           .requiredSize(
             width = maxWidth,
@@ -937,6 +941,7 @@ private fun QueuePreview(
   onTrackClick: (Int) -> Unit,
   onGoToArtist: (String) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onRequestRemoveTrack: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
   val queueViewModel: NowPlayingViewModel = koinViewModel()
@@ -1006,6 +1011,7 @@ private fun QueuePreview(
                 onClick = { onTrackClick(track.position) },
                 onGoToAlbum = null,
                 onGoToArtist = { onGoToArtist(track.artist) },
+                onRemove = { onRequestRemoveTrack(track.position) },
                 modifier = if (isDragging) {
                   Modifier
                     .fillMaxWidth()
