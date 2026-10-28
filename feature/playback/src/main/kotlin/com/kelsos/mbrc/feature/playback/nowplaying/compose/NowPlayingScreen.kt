@@ -792,11 +792,12 @@ fun NowPlayingTrackItem(
     colors = CardDefaults.cardColors(containerColor = backgroundColor),
     shape = RoundedCornerShape(0.dp)
   ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(IntrinsicSize.Min)
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(IntrinsicSize.Min)
+      ) {
       // Left accent bar - always reserve space, colored when playing
       Box(
         modifier = Modifier
@@ -864,10 +865,7 @@ fun NowPlayingTrackItem(
             )
           }
 
-          DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false }
-          ) {
+ {
             if (onGoToAlbum != null) {
               DropdownMenuItem(
                 text = { Text(stringResource(R.string.player_go_to_album)) },
@@ -932,6 +930,45 @@ fun NowPlayingTrackItem(
       }
     }
   }
+
+      DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = { showMenu = false }
+      ) {
+        if (onGoToAlbum != null) {
+          DropdownMenuItem(
+            text = { Text(stringResource(R.string.player_go_to_album)) },
+            leadingIcon = {
+              Icon(imageVector = Icons.Default.Album, contentDescription = null)
+            },
+            onClick = {
+              showMenu = false
+              onGoToAlbum()
+            }
+          )
+        }
+        DropdownMenuItem(
+          text = { Text(stringResource(R.string.player_go_to_artist)) },
+          leadingIcon = {
+            Icon(imageVector = Icons.Default.Person, contentDescription = null)
+          },
+          onClick = {
+            showMenu = false
+            onGoToArtist()
+          }
+        )
+        DropdownMenuItem(
+          text = { Text(stringResource(R.string.menu_remove_track)) },
+          leadingIcon = {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+          },
+          onClick = {
+            showMenu = false
+            onRemove?.invoke()
+          }
+        )
+      }
+    }
 }
 
 private const val NOW_PLAYING_LIST_ID = "nowplaying"
