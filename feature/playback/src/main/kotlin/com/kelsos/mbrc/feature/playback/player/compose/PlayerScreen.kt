@@ -141,7 +141,7 @@ import org.koin.compose.koinInject
 fun PlayerScreen(
   onNavigateToLibrarySearch: () -> Unit,
   onNavigateToNowPlaying: () -> Unit,
-  onRequestRemoveTrack: (Int) -> Unit,
+  onRequestRemoveTrack: (String) -> Unit,
   onNavigateToAlbum: (album: String, artist: String) -> Unit,
   onNavigateToArtist: (artist: String) -> Unit,
   snackbarHostState: SnackbarHostState,
@@ -303,7 +303,7 @@ fun PlayerScreenContent(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
-  onRequestRemoveTrack: (Int) -> Unit,
+  onRequestRemoveTrack: (String) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   trackRating: TrackRating,
@@ -639,7 +639,7 @@ private fun PortraitPlayerLayout(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
-  onRequestRemoveTrack: (Int) -> Unit,
+  onRequestRemoveTrack: (String) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
@@ -791,7 +791,7 @@ private fun LandscapePlayerLayout(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
-  onRequestRemoveTrack: (Int) -> Unit,
+  onRequestRemoveTrack: (String) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
@@ -946,7 +946,7 @@ private fun QueuePreview(
   onTrackClick: (Int) -> Unit,
   onGoToArtist: (String) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
-  onRequestRemoveTrack: (Int) -> Unit,
+  onRequestRemoveTrack: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   val queueViewModel: NowPlayingViewModel = koinViewModel()
@@ -1016,7 +1016,7 @@ private fun QueuePreview(
                 onClick = { onTrackClick(track.position) },
                 onGoToAlbum = null,
                 onGoToArtist = { onGoToArtist(track.artist) },
-                onRemove = { onRequestRemoveTrack(track.position) },
+                onRemove = { onRequestRemoveTrack(track.path) },
                 modifier = if (isDragging) {
                   Modifier
                     .fillMaxWidth()
