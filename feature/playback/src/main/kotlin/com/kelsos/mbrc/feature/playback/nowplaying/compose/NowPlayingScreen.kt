@@ -115,6 +115,8 @@ fun NowPlayingScreen(
   onNavigateToAlbum: ((path: String) -> Unit)?,
   onNavigateToArtist: (artist: String) -> Unit,
   snackbarHostState: SnackbarHostState,
+  pendingRemovePosition: Int? = null,
+  onPendingRemoveComplete: () -> Unit = {},
   viewModel: NowPlayingViewModel = koinViewModel()
 ) {
   val queue = viewModel.tracks.collectAsLazyPagingItems()
@@ -141,6 +143,25 @@ fun NowPlayingScreen(
   val tracks = if (isFiltering) searchResults else queue
   val lazyListState = if (isFiltering) searchListState else queueListState
   val scope = rememberCoroutineScope()
+  var pendingRemoveStarted by remember(pendingRemovePosition) { mutableStateOf(false) }
+
+  // A removal requested from the player's compact queue is executed here using
+  // the same queue action as this screen's own Remove track menu. Return to the
+  // player after the command has had time to reach MusicBee and the queue refreshes.
+  LaunchedEffect(pendingRemovePosition, queue.loadState.refresh) {
+    if (
+      pendingRemovePosition != null &&
+      !pendingRemoveStarted &&
+      queue.loadState.refresh !is LoadState.Loading
+    ) {
+      pendingRemoveStarted = true
+      viewModel.actions.removeTrack(pendingRemovePosition)
+      kotlinx.coroutines.delay(900)
+      queue.refresh()
+      kotlinx.coroutines.delay(300)
+      onPendingRemoveComplete()
+    }
+  }
 
   // Also restores the filter when rememberSaveable restores an open search field.
   LaunchedEffect(searchQuery) {
