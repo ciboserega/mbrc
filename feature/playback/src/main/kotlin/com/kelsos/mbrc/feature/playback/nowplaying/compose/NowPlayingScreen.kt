@@ -159,7 +159,7 @@ fun NowPlayingScreen(
       }
       if (actualIndex != null) {
         pendingRemoveStarted = true
-        viewModel.actions.removeTrack(actualIndex + 1)
+        viewModel.actions.removeTrack(actualIndex)
         kotlinx.coroutines.delay(900)
         queue.refresh()
         kotlinx.coroutines.delay(300)
@@ -619,7 +619,9 @@ private fun NowPlayingTrackList(
               // Remove by MusicBee's original one-based queue position.
               // Do not use the displayed LazyColumn index: it is zero-based and
               // can differ from the queue position after filtering or reordering.
-              onTrackRemove(track.position)
+              // The remove protocol uses zero-based queue orders, unlike play.
+              // The stored track position is one-based, so convert it before removal.
+              onTrackRemove(track.position - 1)
             },
             onGoToAlbum = onGoToAlbum?.let { callback -> { callback(track.path) } },
             onGoToArtist = { onGoToArtist(track.artist) }
