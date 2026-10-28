@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -1025,7 +1026,8 @@ private fun QueuePreview(
         modifier = Modifier
           .align(Alignment.BottomEnd)
           .padding(16.dp)
-          .size(52.dp)
+          .size(56.dp)
+          .border(2.dp, Color.LightGray.copy(alpha = 0.45f), CircleShape)
           .clip(CircleShape)
           .clickable(onClick = onNavigateToNowPlaying),
         shape = CircleShape,
