@@ -782,7 +782,14 @@ fun NowPlayingTrackItem(
     MaterialTheme.colorScheme.surface
   }
 
-  Box(modifier = modifier.fillMaxWidth()) {
+  Box(
+    modifier = modifier
+      .fillMaxWidth()
+      .combinedClickable(
+        onClick = onClick,
+        onLongClick = { showMenu = true }
+      )
+  ) {
     Card(
       modifier = Modifier.fillMaxWidth(),
       elevation = CardDefaults.cardElevation(defaultElevation = elevation),
@@ -804,10 +811,6 @@ fun NowPlayingTrackItem(
         Row(
           modifier = Modifier
             .weight(1f)
-            .combinedClickable(
-              onClick = onClick,
-              onLongClick = { if (showOverflowMenu) showMenu = true }
-            )
             .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
           verticalAlignment = Alignment.CenterVertically
         ) {
