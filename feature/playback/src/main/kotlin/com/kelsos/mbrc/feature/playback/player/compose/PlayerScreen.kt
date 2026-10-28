@@ -420,6 +420,7 @@ fun PlayerScreenContent(
         playingTrack = playingTrack,
         queueTracks = queueTracks,
         onQueueTrackClick = onQueueTrackClick,
+        onNavigateToNowPlaying = onNavigateToNowPlaying,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
