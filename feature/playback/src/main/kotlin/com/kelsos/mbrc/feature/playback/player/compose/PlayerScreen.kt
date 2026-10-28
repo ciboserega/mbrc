@@ -249,6 +249,7 @@ fun PlayerScreen(
         playingTrack = playingTrack,
         queueTracks = queueTracks,
         onQueueTrackClick = { position -> queueViewModel.actions.play(position) },
+        onNavigateToNowPlaying = onNavigateToNowPlaying,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
         trackRating = trackRating,
@@ -298,6 +299,7 @@ fun PlayerScreenContent(
   playingTrack: TrackInfo,
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
+  onNavigateToNowPlaying: () -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   trackRating: TrackRating,
@@ -391,6 +393,7 @@ fun PlayerScreenContent(
         playingTrack = playingTrack,
         queueTracks = queueTracks,
         onQueueTrackClick = onQueueTrackClick,
+        onNavigateToNowPlaying = onNavigateToNowPlaying,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
@@ -417,6 +420,7 @@ fun PlayerScreenContent(
         playingTrack = playingTrack,
         queueTracks = queueTracks,
         onQueueTrackClick = onQueueTrackClick,
+        onNavigateToNowPlaying = onNavigateToNowPlaying,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
@@ -628,6 +632,7 @@ private fun PortraitPlayerLayout(
   playingTrack: TrackInfo,
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
+  onNavigateToNowPlaying: () -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
@@ -678,6 +683,7 @@ private fun PortraitPlayerLayout(
         isPlaybackActive = playbackState.playerState == PlayerState.Playing,
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
+        onNavigateToNowPlaying = onNavigateToNowPlaying,
         modifier = Modifier
           .requiredSize(
             width = maxWidth,
@@ -824,6 +830,7 @@ private fun LandscapePlayerLayout(
         isPlaybackActive = playbackState.playerState == PlayerState.Playing,
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
+        onNavigateToNowPlaying = onNavigateToNowPlaying,
         modifier = Modifier
           .fillMaxHeight(PlayerConstants.LANDSCAPE_ALBUM_HEIGHT_FRACTION)
           .aspectRatio(1f)
@@ -927,6 +934,7 @@ private fun QueuePreview(
   isPlaybackActive: Boolean,
   onTrackClick: (Int) -> Unit,
   onGoToArtist: (String) -> Unit,
+  onNavigateToNowPlaying: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   val queueViewModel: NowPlayingViewModel = koinViewModel()
@@ -946,7 +954,8 @@ private fun QueuePreview(
     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
   ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+      Column(modifier = Modifier.fillMaxSize()) {
       Text(
         text = stringResource(R.string.nav_queue),
         style = MaterialTheme.typography.titleSmall,
@@ -1008,6 +1017,27 @@ private fun QueuePreview(
               )
             }
           }
+        }
+      }
+      Surface(
+        modifier = Modifier
+          .align(Alignment.BottomEnd)
+          .padding(16.dp)
+          .size(52.dp)
+          .clip(CircleShape)
+          .clickable(onClick = onNavigateToNowPlaying),
+        shape = CircleShape,
+        color = Color.DarkGray.copy(alpha = 0.72f),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+      ) {
+        Box(contentAlignment = Alignment.Center) {
+          Text(
+            text = "Q",
+            color = Color.LightGray,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+          )
         }
       }
     }
