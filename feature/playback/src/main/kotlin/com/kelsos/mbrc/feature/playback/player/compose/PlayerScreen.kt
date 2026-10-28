@@ -691,6 +691,7 @@ private fun PortraitPlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToLibrarySearch = onTrackInfoClick,
         onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
           .requiredSize(
@@ -841,6 +842,7 @@ private fun LandscapePlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToLibrarySearch = onTrackInfoClick,
         onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
           .fillMaxHeight(PlayerConstants.LANDSCAPE_ALBUM_HEIGHT_FRACTION)
@@ -946,6 +948,7 @@ private fun QueuePreview(
   onTrackClick: (Int) -> Unit,
   onGoToArtist: (String) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onNavigateToLibrarySearch: () -> Unit,
   onRequestRemoveTrack: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -1032,6 +1035,28 @@ private fun QueuePreview(
           }
         }
       }
+      }
+      Surface(
+        modifier = Modifier
+          .align(Alignment.BottomEnd)
+          .padding(end = 16.dp, bottom = 84.dp)
+          .size(56.dp)
+          .border(2.dp, Color.LightGray.copy(alpha = 0.45f), CircleShape)
+          .clip(CircleShape)
+          .clickable(onClick = onNavigateToLibrarySearch),
+        shape = CircleShape,
+        color = Color.DarkGray.copy(alpha = 0.72f),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+      ) {
+        Box(contentAlignment = Alignment.Center) {
+          Text(
+            text = "L",
+            color = Color.LightGray,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+          )
+        }
       }
       Surface(
         modifier = Modifier
