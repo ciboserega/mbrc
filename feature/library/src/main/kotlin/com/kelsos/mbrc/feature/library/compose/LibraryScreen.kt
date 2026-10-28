@@ -1,6 +1,11 @@
 package com.kelsos.mbrc.feature.library.compose
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,11 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,6 +31,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -56,6 +68,7 @@ fun LibraryScreen(
   onNavigateToArtistAlbums: (Artist) -> Unit,
   onNavigateToAlbumTracks: (Album) -> Unit,
   onNavigateToPlayer: () -> Unit,
+  onNavigateToQueue: () -> Unit,
   snackbarHostState: SnackbarHostState,
   modifier: Modifier = Modifier,
   viewModel: LibraryViewModel = koinViewModel(),
@@ -190,6 +203,7 @@ fun LibraryScreen(
     menuItems = menuItems,
     modifier = modifier
   ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
     LibraryContent(
       snackbarHostState = snackbarHostState,
       isSyncing = syncProgress.running,
@@ -197,8 +211,55 @@ fun LibraryScreen(
       onDismissSortSheet = { showSortSheet = false },
       onNavigateToPlayer = onNavigateToPlayer,
       onSync = { viewModel.sync() },
-      modifier = Modifier.padding(paddingValues)
+      modifier = Modifier.fillMaxSize()
     )
+    Column(
+      modifier = Modifier
+        .align(Alignment.BottomEnd)
+        .padding(end = 16.dp, bottom = 354.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      LibraryShortcutButton(label = "Q", onClick = onNavigateToQueue)
+      Spacer(modifier = Modifier.height(12.dp))
+      LibraryShortcutButton(iconPlay = true, onClick = onNavigateToPlayer)
+    }
+    }
+  }
+}
+
+@Composable
+private fun LibraryShortcutButton(
+  label: String? = null,
+  iconPlay: Boolean = false,
+  onClick: () -> Unit
+) {
+  Surface(
+    modifier = Modifier
+      .size(56.dp)
+      .clickable(onClick = onClick),
+    shape = CircleShape,
+    color = Color.DarkGray.copy(alpha = 0.72f),
+    tonalElevation = 0.dp,
+    shadowElevation = 0.dp,
+    border = androidx.compose.foundation.BorderStroke(2.dp, Color.LightGray.copy(alpha = 0.45f))
+  ) {
+    Box(contentAlignment = Alignment.Center) {
+      if (iconPlay) {
+        Icon(
+          imageVector = Icons.Default.PlayArrow,
+          contentDescription = "Now Playing",
+          tint = Color.LightGray,
+          modifier = Modifier.size(34.dp)
+        )
+      } else {
+        Text(
+          text = label.orEmpty(),
+          color = Color.LightGray,
+          style = MaterialTheme.typography.titleLarge,
+          fontWeight = FontWeight.Bold
+        )
+      }
+    }
   }
 }
 
