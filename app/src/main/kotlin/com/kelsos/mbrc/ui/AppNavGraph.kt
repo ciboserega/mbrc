@@ -55,6 +55,10 @@ fun AppNavGraph(
         onNavigateToNowPlaying = {
           navController.navigateFrom(entry, Screen.NowPlayingList.route)
         },
+        onRequestRemoveTrack = { position ->
+          entry.savedStateHandle["pendingRemovePosition"] = position
+          navController.navigateFrom(entry, Screen.NowPlayingList.route)
+        },
         onNavigateToAlbum = { album, artist ->
           val encodedAlbum = Uri.encode(album)
           val encodedArtist = Uri.encode(artist)
@@ -229,10 +233,17 @@ fun AppNavGraph(
       val scope = rememberCoroutineScope()
       val trackNotFoundMessage = stringResource(R.string.navigation_track_not_in_library)
 
+      val pendingRemovePosition = navController.previousBackStackEntry
+        ?.savedStateHandle?.get<Int>("pendingRemovePosition")
       NowPlayingScreen(
         onOpenDrawer = onOpenDrawer,
         onNavigateToLibrarySearch = { navController.navigateFrom(entry, Screen.LibrarySearch.route) },
         onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
+        pendingRemovePosition = pendingRemovePosition,
+        onPendingRemoveComplete = {
+          navController.previousBackStackEntry?.savedStateHandle?.remove<Int>("pendingRemovePosition")
+          navController.popBackStack()
+        },
         onNavigateToAlbum = { path ->
           // The repository lookup runs before the navigate, so this one can resolve long after
           // the tap. The guard inside navigateFrom is what keeps it from landing mid-gesture.
