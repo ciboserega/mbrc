@@ -114,6 +114,7 @@ import org.koin.androidx.compose.koinViewModel
 fun NowPlayingScreen(
   onOpenDrawer: () -> Unit,
   onNavigateToPlayer: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   onNavigateToLibrarySearch: () -> Unit,
   onNavigateToAlbum: ((path: String) -> Unit)?,
   onNavigateToArtist: (artist: String) -> Unit,
@@ -287,6 +288,11 @@ fun NowPlayingScreen(
           .padding(end = 16.dp, bottom = 314.dp),
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
+        QueueShortcutButton(
+          label = "S",
+          onClick = onNavigateToSlots
+        )
+        Spacer(modifier = Modifier.height(12.dp))
         QueueShortcutButton(
           label = "L",
           onClick = onNavigateToLibrarySearch
