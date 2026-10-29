@@ -326,9 +326,12 @@ fun PlayerScreenContent(
   val defaultBackground = MaterialTheme.colorScheme.background
   var stopAfterCurrentTrack by rememberSaveable { mutableStateOf(false) }
   var stopRequestedForTrack by rememberSaveable { mutableStateOf("") }
+  // Use a composition-owned scope so playback-state updates caused by the first Stop
+  // do not cancel the remaining two scheduled Stop commands.
+  val stopCommandScope = rememberCoroutineScope()
 
-  // Stop playback just before the active track ends so the remote player does not advance
-  // to the next queued track first. Streams with unknown duration are intentionally ignored.
+  // When repeat-one ("1") mode is active, send Stop at 1.5s, 1.0s and 0.5s
+  // before the end. Streams with unknown duration are intentionally ignored.
   LaunchedEffect(
     stopAfterCurrentTrack,
     playingTrack.path,
@@ -345,7 +348,13 @@ fun PlayerScreenContent(
       stopRequestedForTrack != playingTrack.path
     ) {
       stopRequestedForTrack = playingTrack.path
-      actions.stop()
+      stopCommandScope.launch {
+        actions.stop()
+        delay(500)
+        actions.stop()
+        delay(500)
+        actions.stop()
+      }
     }
   }
 
