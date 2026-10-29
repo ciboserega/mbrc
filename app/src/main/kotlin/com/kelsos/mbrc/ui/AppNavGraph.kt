@@ -30,6 +30,7 @@ import com.kelsos.mbrc.feature.settings.compose.ConnectionManagerScreen
 import com.kelsos.mbrc.feature.settings.compose.LicensesScreen
 import com.kelsos.mbrc.feature.settings.compose.SettingsScreen
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 
 /**
@@ -43,6 +44,7 @@ fun AppNavGraph(
   startDestination: String = Screen.Home.route,
   onOpenDrawer: () -> Unit = {}
 ) {
+  val navigationScope = rememberCoroutineScope()
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -247,8 +249,19 @@ fun AppNavGraph(
         pendingRemovePath = pendingRemovePath,
         onPendingRemoveComplete = {
           navController.previousBackStackEntry?.savedStateHandle?.remove<String>("pendingRemovePath")
-          // Match the Android system Back arrow after the track has been removed.
-          navController.navigateUp()
+          // Send three idempotent return-to-player commands at 1.0s, 1.5s, and 2.0s
+          // after removal. The navigation scope belongs to AppNavGraph, so it survives
+          // the Queue destination being popped by the first command.
+          navigationScope.launch {
+            delay(1000)
+            repeat(3) { attempt ->
+              navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Home.route) { inclusive = false }
+                launchSingleTop = true
+              }
+              if (attempt == 0 || attempt == 1) delay(500)
+            }
+          }
         },
         onNavigateToAlbum = { path ->
           // The repository lookup runs before the navigate, so this one can resolve long after
