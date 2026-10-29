@@ -56,6 +56,9 @@ fun AppNavGraph(
         onNavigateToNowPlaying = {
           navController.navigateFrom(entry, Screen.NowPlayingList.route)
         },
+        onNavigateToSlots = {
+          navController.navigateFrom(entry, Screen.Slots.route)
+        },
         onRequestRemoveTrack = { trackPath ->
           entry.savedStateHandle["pendingRemovePath"] = trackPath
           navController.navigateFrom(entry, Screen.NowPlayingList.route)
