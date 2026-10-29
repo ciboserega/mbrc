@@ -203,7 +203,7 @@ fun SlotsScreen(
         }
       }
       Column(
-        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 82.dp),
+        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 314.dp),
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
         SlotNavigationButton(label = "Q", onClick = onNavigateToQueue)
