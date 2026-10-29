@@ -89,11 +89,15 @@ private fun rememberDrawerNavigation(
     val current = navController.currentBackStackEntry
     if (current == null || current.lifecycleIsResumed()) {
       navController.navigate(screen.route) {
+        // Drawer destinations must always resolve to the exact item tapped.
+        // Restoring a saved top-level stack here can reopen a stale destination after
+        // the Slots route was added, instead of the requested Home or Library screen.
         popUpTo(navController.graph.startDestinationId) {
-          saveState = true
+          inclusive = false
+          saveState = false
         }
         launchSingleTop = true
-        restoreState = true
+        restoreState = false
       }
     }
     onNavigated()
