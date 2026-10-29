@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
@@ -451,7 +452,8 @@ private val primaryNavigationItems = listOf(
   DrawerItem(Screen.Home, Icons.Default.Home, R.string.nav_now_playing),
   DrawerItem(Screen.NowPlayingList, Icons.AutoMirrored.Filled.QueueMusic, R.string.nav_queue),
   DrawerItem(Screen.Library, Icons.Default.LibraryMusic, R.string.common_library),
-  DrawerItem(Screen.Playlists, Icons.AutoMirrored.Filled.PlaylistPlay, R.string.nav_playlists)
+  DrawerItem(Screen.Playlists, Icons.AutoMirrored.Filled.PlaylistPlay, R.string.nav_playlists),
+  DrawerItem(Screen.Slots, Icons.Default.ViewList, R.string.nav_slots)
 )
 
 private val secondaryNavigationItems = listOf(
