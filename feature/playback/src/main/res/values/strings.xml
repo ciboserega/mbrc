@@ -41,6 +41,9 @@
   <string name="nav_now_playing">Now playing</string>
   <string name="player_search_library">Search tracks in library</string>
   <string name="nav_queue">Queue</string>
+  <string name="nav_slots">Slots</string>
+  <string name="slots_add_tracks">Add tracks from Library</string>
+  <string name="slots_empty">Slots is empty. Tap “Add tracks from Library” to build your own list.</string>
   <string name="now_playing__drag_handle">Drag to reorder</string>
   <string name="now_playing__empty_list">Your queue is empty</string>
   <string name="now_playing__scroll_to_playing">Scroll to playing track</string>
