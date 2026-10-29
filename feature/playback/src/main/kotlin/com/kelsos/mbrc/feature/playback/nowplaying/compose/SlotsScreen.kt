@@ -119,7 +119,7 @@ fun SlotsScreen(
 
   // Cache each assigned track duration when MusicBee reports it, so every populated slot can
   // show its full duration while idle and the real remaining time while that slot is playing.
-  LaunchedEffect(currentTrack.path, playingPosition.total) {
+  LaunchedEffect(currentTrack.path, playingPosition.total, slotTracks.toList()) {
     if (currentTrack.path.isNotBlank() && playingPosition.total > 0L) {
       val index = (0 until SLOT_COUNT).firstOrNull { slotTracks[it]?.src == currentTrack.path }
       if (index != null && slotDurations[index] != playingPosition.total) {
@@ -318,7 +318,11 @@ fun SlotsScreen(
                       val index = slotToAssign
                       if (index != null) {
                         slotTracks[index] = track
-                        preferences.edit().putString(slotKey(index), track.src).apply()
+                        slotDurations[index] = 0L
+                        preferences.edit()
+                          .putString(slotKey(index), track.src)
+                          .remove(slotDurationKey(index))
+                          .apply()
                         slotToAssign = null
                       }
                     },
@@ -347,7 +351,8 @@ fun SlotsScreen(
           val index = slotToAssign
           if (index != null) {
             slotTracks[index] = null
-            preferences.edit().remove(slotKey(index)).apply()
+            slotDurations[index] = 0L
+            preferences.edit().remove(slotKey(index)).remove(slotDurationKey(index)).apply()
           }
           slotToAssign = null
         }) { Text("Clear slot") }
