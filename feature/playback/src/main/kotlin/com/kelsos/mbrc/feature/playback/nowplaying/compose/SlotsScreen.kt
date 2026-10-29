@@ -4,9 +4,16 @@ import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,8 +25,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -34,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -41,6 +51,8 @@ import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.kelsos.mbrc.feature.playback.R
@@ -69,6 +81,8 @@ import org.koin.compose.koinInject
 fun SlotsScreen(
   onOpenDrawer: () -> Unit,
   onNavigateToPlayer: () -> Unit,
+  onNavigateToQueue: () -> Unit,
+  onNavigateToLibrary: () -> Unit,
   snackbarHostState: SnackbarHostState,
   trackRepository: TrackRepository = koinInject(),
   queueApi: QueueApi = koinInject(),
@@ -114,9 +128,10 @@ fun SlotsScreen(
     menuItems = emptyList()
   ) { padding ->
     androidx.compose.runtime.CompositionLocalProvider(LocalViewConfiguration provides fourSecondLongPressConfiguration) {
+      Box(modifier = Modifier.fillMaxSize().padding(padding)) {
       LazyVerticalGrid(
         columns = GridCells.Fixed(4),
-        modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 8.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
         contentPadding = PaddingValues(top = 10.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -186,6 +201,27 @@ fun SlotsScreen(
             }
           }
         }
+      }
+      Column(
+        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 82.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        SlotNavigationButton(label = "Q", onClick = onNavigateToQueue)
+        Spacer(modifier = Modifier.height(12.dp))
+        SlotNavigationButton(label = "L", onClick = onNavigateToLibrary)
+        Spacer(modifier = Modifier.height(12.dp))
+        Surface(
+          modifier = Modifier.size(56.dp).border(2.dp, Color.LightGray.copy(alpha = 0.45f), CircleShape)
+            .clip(CircleShape).clickable(onClick = onNavigateToPlayer),
+          shape = CircleShape, color = Color.DarkGray.copy(alpha = 0.72f),
+          tonalElevation = 0.dp, shadowElevation = 0.dp
+        ) {
+          Box(contentAlignment = Alignment.Center) {
+            Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Now playing",
+              tint = Color.LightGray, modifier = Modifier.size(30.dp))
+          }
+        }
+      }
       }
     }
   }
@@ -267,3 +303,20 @@ private fun slotKey(index: Int) = "slot_${index + 1}"
 private const val SLOTS_PREFERENCES = "independent_slots"
 private const val SLOT_COUNT = 20
 private const val SLOT_LONG_PRESS_MS = 4000L
+
+
+@Composable
+private fun SlotNavigationButton(label: String, onClick: () -> Unit) {
+  Surface(
+    modifier = Modifier.size(56.dp).border(2.dp, Color.LightGray.copy(alpha = 0.45f), CircleShape)
+      .clip(CircleShape).clickable(onClick = onClick),
+    shape = CircleShape,
+    color = Color.DarkGray.copy(alpha = 0.72f),
+    tonalElevation = 0.dp,
+    shadowElevation = 0.dp
+  ) {
+    Box(contentAlignment = Alignment.Center) {
+      Text(label, color = Color.LightGray, style = MaterialTheme.typography.titleLarge)
+    }
+  }
+}
