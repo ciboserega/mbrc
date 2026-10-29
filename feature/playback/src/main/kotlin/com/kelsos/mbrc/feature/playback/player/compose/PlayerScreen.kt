@@ -69,6 +69,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -330,30 +331,29 @@ fun PlayerScreenContent(
   // do not cancel the remaining two scheduled Stop commands.
   val stopCommandScope = rememberCoroutineScope()
 
-  // When repeat-one ("1") mode is active, send Stop at 1.5s, 1.0s and 0.5s
-  // before the end. Streams with unknown duration are intentionally ignored.
-  LaunchedEffect(
-    stopAfterCurrentTrack,
-    playingTrack.path,
-    playingPosition.current,
-    playingPosition.total,
-    playbackState.playerState
-  ) {
-    if (
-      stopAfterCurrentTrack &&
-      playbackState.playerState == PlayerState.Playing &&
-      playingTrack.path.isNotBlank() &&
-      playingPosition.total > 0 &&
-      playingPosition.current >= playingPosition.total - PlayerConstants.STOP_BEFORE_END_MS &&
-      stopRequestedForTrack != playingTrack.path
-    ) {
-      stopRequestedForTrack = playingTrack.path
-      stopCommandScope.launch {
-        actions.stop()
-        delay(500)
-        actions.stop()
-        delay(500)
-        actions.stop()
+  // Keep observing the playback clock for the whole track. Restarting this effect on
+  // every position update can repeatedly cancel the check right at the end boundary.
+  // When mode "1" is active, send Stop at 1.5s, 1.0s and 0.5s before the end.
+  LaunchedEffect(stopAfterCurrentTrack, playingTrack.path) {
+    if (!stopAfterCurrentTrack || playingTrack.path.isBlank()) return@LaunchedEffect
+
+    snapshotFlow {
+      Triple(playingPosition.current, playingPosition.total, playbackState.playerState)
+    }.collect { (current, total, state) ->
+      if (
+        state == PlayerState.Playing &&
+        total > 0 &&
+        current >= total - PlayerConstants.STOP_BEFORE_END_MS &&
+        stopRequestedForTrack != playingTrack.path
+      ) {
+        stopRequestedForTrack = playingTrack.path
+        stopCommandScope.launch {
+          actions.stop()
+          delay(500)
+          actions.stop()
+          delay(500)
+          actions.stop()
+        }
       }
     }
   }
