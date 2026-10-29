@@ -284,7 +284,7 @@ fun NowPlayingScreen(
       Column(
         modifier = Modifier
           .align(Alignment.BottomEnd)
-          .padding(end = 16.dp, bottom = 320.dp),
+          .padding(end = 16.dp, bottom = 314.dp),
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
         QueueShortcutButton(
