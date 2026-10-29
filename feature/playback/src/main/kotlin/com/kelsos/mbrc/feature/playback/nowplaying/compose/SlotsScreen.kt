@@ -54,7 +54,6 @@ import com.kelsos.mbrc.core.networking.api.QueueApi
 import com.kelsos.mbrc.core.networking.dto.QueuePayload
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
 import com.kelsos.mbrc.core.networking.protocol.usecases.stop
-import com.kelsos.mbrc.core.queue.Queue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -131,21 +130,29 @@ fun SlotsScreen(
                   scope.launch { snackbarHostState.showSnackbar("Hold a slot for 4 seconds to assign a track") }
                 } else {
                   scope.launch {
-                    val result = withContext(Dispatchers.IO) {
-                      nowPlayingRepository.searchTrack(track.title)
-                    }
-                    if (result == null || result.position <= 0) {
-                      snackbarHostState.showSnackbar("Track is not in MusicBee Queue yet")
+                    if (activeSlot == index) {
+                      // Stop playback; MusicBee's Stop command returns the track to its start.
+                      userActionUseCase.stop()
+                      activeSlot = null
                     } else {
-                      if (activeSlot == index) {
-                        // Stop then select the same queue entry again to restart from the beginning.
-                        userActionUseCase.perform(com.kelsos.mbrc.core.networking.protocol.actions.UserAction(
-                          com.kelsos.mbrc.core.networking.protocol.base.Protocol.PlayerStop, true
-                        ))
-                        activeSlot = null
-                      } else {
-                        userActionUseCase.playTrack(result.position)
-                        activeSlot = index
+                      try {
+                        // Queue this library file as NOW and start it immediately.
+                        val response = withContext(Dispatchers.IO) {
+                          queueApi.queue(
+                            QueuePayload(
+                              type = "now",
+                              data = listOf(track.src),
+                              play = track.src
+                            )
+                          )
+                        }
+                        if (response.code == 0) {
+                          activeSlot = index
+                        } else {
+                          snackbarHostState.showSnackbar("MusicBee could not add this track to Queue")
+                        }
+                      } catch (error: Exception) {
+                        snackbarHostState.showSnackbar("Could not play track: ${error.message ?: "connection error"}")
                       }
                     }
                   }
