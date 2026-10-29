@@ -50,9 +50,11 @@ import com.kelsos.mbrc.core.data.library.track.Track
 import com.kelsos.mbrc.core.data.library.track.TrackRepository
 import com.kelsos.mbrc.core.ui.compose.DynamicScreenScaffold
 import com.kelsos.mbrc.core.ui.compose.TopBarState
+import com.kelsos.mbrc.core.networking.api.QueueApi
+import com.kelsos.mbrc.core.networking.dto.QueuePayload
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
-import com.kelsos.mbrc.core.networking.protocol.usecases.playTrack
-import com.kelsos.mbrc.feature.playback.nowplaying.NowPlayingRepository
+import com.kelsos.mbrc.core.networking.protocol.usecases.stop
+import com.kelsos.mbrc.core.queue.Queue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,7 +72,7 @@ fun SlotsScreen(
   onNavigateToPlayer: () -> Unit,
   snackbarHostState: SnackbarHostState,
   trackRepository: TrackRepository = koinInject(),
-  nowPlayingRepository: NowPlayingRepository = koinInject(),
+  queueApi: QueueApi = koinInject(),
   userActionUseCase: UserActionUseCase = koinInject()
 ) {
   val context = LocalContext.current
