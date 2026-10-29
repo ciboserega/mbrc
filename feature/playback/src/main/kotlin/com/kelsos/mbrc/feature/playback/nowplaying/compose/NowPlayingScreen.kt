@@ -3,6 +3,7 @@ package com.kelsos.mbrc.feature.playback.nowplaying.compose
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,6 +80,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -972,7 +974,13 @@ fun NowPlayingTrackItem(
 
     DropdownMenu(
       expanded = showMenu,
-      onDismissRequest = { showMenu = false }
+      onDismissRequest = { showMenu = false },
+      modifier = Modifier.border(
+        width = 2.dp,
+        color = Color.LightGray,
+        shape = RoundedCornerShape(28.dp)
+      ),
+      shape = RoundedCornerShape(28.dp)
     ) {
       if (onGoToAlbum != null) {
         DropdownMenuItem(
@@ -985,16 +993,20 @@ fun NowPlayingTrackItem(
         )
       }
       DropdownMenuItem(
-        text = { Text(stringResource(R.string.player_go_to_artist)) },
-        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-        onClick = {
-          showMenu = false
-          onGoToArtist()
-        }
-      )
-      DropdownMenuItem(
-        text = { Text(stringResource(R.string.menu_remove_track)) },
-        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+        text = {
+          Text(
+            text = stringResource(R.string.menu_remove_track),
+            fontSize = MaterialTheme.typography.bodyLarge.fontSize + 2.sp,
+            color = Color(0xFFFF8A80)
+          )
+        },
+        leadingIcon = {
+          Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = null,
+            tint = Color(0xFFFF8A80)
+          )
+        },
         onClick = {
           showMenu = false
           onRemove?.invoke()
