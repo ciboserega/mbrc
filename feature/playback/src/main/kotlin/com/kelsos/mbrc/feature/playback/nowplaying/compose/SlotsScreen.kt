@@ -20,6 +20,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelsos.mbrc.core.common.state.PlayerState
+import com.kelsos.mbrc.feature.playback.player.PlayerViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -95,7 +100,11 @@ fun SlotsScreen(
   val slotTracks = remember { mutableStateListOf<Track?>().apply { repeat(SLOT_COUNT) { add(null) } } }
   var slotToAssign by remember { mutableStateOf<Int?>(null) }
   var searchText by remember { mutableStateOf("") }
-  var activeSlot by remember { mutableStateOf<Int?>(null) }
+  val playerViewModel: PlayerViewModel = koinViewModel()
+  val currentTrack by playerViewModel.playingTrack.collectAsStateWithLifecycle()
+  val playingPosition by playerViewModel.playingPosition.collectAsStateWithLifecycle()
+  val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
+  val slotDurations = remember { mutableStateListOf<Long>().apply { repeat(SLOT_COUNT) { add(0L) } } }
   val scope = rememberCoroutineScope()
   val title = stringResource(R.string.nav_slots)
   val topBar = remember(title) { TopBarState.WithTitle(title) }
@@ -104,6 +113,19 @@ fun SlotsScreen(
     repeat(SLOT_COUNT) { index ->
       val path = preferences.getString(slotKey(index), null)
       slotTracks[index] = path?.let { withContext(Dispatchers.IO) { trackRepository.getByPath(it) } }
+      slotDurations[index] = preferences.getLong(slotDurationKey(index), 0L)
+    }
+  }
+
+  // Cache each assigned track duration when MusicBee reports it, so every populated slot can
+  // show its full duration while idle and the real remaining time while that slot is playing.
+  LaunchedEffect(currentTrack.path, playingPosition.total) {
+    if (currentTrack.path.isNotBlank() && playingPosition.total > 0L) {
+      val index = (0 until SLOT_COUNT).firstOrNull { slotTracks[it]?.src == currentTrack.path }
+      if (index != null && slotDurations[index] != playingPosition.total) {
+        slotDurations[index] = playingPosition.total
+        preferences.edit().putLong(slotDurationKey(index), playingPosition.total).apply()
+      }
     }
   }
 
@@ -138,6 +160,13 @@ fun SlotsScreen(
       ) {
         items((0 until SLOT_COUNT).toList(), key = { it }) { index ->
           val track = slotTracks[index]
+          val isPlaying = track != null && track.src == currentTrack.path &&
+            playbackState.playerState == PlayerState.Playing
+          val remainingMillis = if (track != null && track.src == currentTrack.path && playingPosition.total > 0L) {
+            (playingPosition.total - playingPosition.current).coerceAtLeast(0L)
+          } else {
+            slotDurations[index]
+          }
           Surface(
             modifier = Modifier.fillMaxWidth().aspectRatio(0.82f).combinedClickable(
               onClick = {
@@ -145,10 +174,9 @@ fun SlotsScreen(
                   scope.launch { snackbarHostState.showSnackbar("Hold a slot for 4 seconds to assign a track") }
                 } else {
                   scope.launch {
-                    if (activeSlot == index) {
-                      // Stop playback; MusicBee's Stop command returns the track to its start.
+                    if (track.src == currentTrack.path && playbackState.playerState == PlayerState.Playing) {
+                      // Tapping the currently playing slot again stops playback.
                       userActionUseCase.stop()
-                      activeSlot = null
                     } else {
                       try {
                         // Queue this library file as NOW and start it immediately.
@@ -161,9 +189,7 @@ fun SlotsScreen(
                             )
                           )
                         }
-                        if (response.code == 0) {
-                          activeSlot = index
-                        } else {
+                        if (response.code != 0) {
                           snackbarHostState.showSnackbar("MusicBee could not add this track to Queue")
                         }
                       } catch (error: Exception) {
@@ -179,23 +205,54 @@ fun SlotsScreen(
               }
             ),
             shape = RoundedCornerShape(8.dp),
-            color = if (track == null) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
-              else MaterialTheme.colorScheme.primaryContainer,
+            color = when {
+              track == null -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
+              isPlaying -> Color(0xFFD0C3B8)
+              else -> Color(0xFF454545)
+            },
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f)),
             tonalElevation = 0.dp,
             shadowElevation = 0.dp
           ) {
-            Column(
-              modifier = Modifier.fillMaxSize().padding(5.dp),
-              verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+              Column(
+                modifier = Modifier.fillMaxSize().padding(5.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
+                if (track != null) {
+                  Text(
+                    text = track.title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (isPlaying) Color(0xFF292522) else Color.White,
+                    textAlign = TextAlign.Center,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                  )
+                  if (track.artist.isNotBlank()) {
+                    Text(
+                      text = track.artist,
+                      style = MaterialTheme.typography.labelSmall,
+                      color = if (isPlaying) Color(0xFF51473F) else Color(0xFFD0D0D0),
+                      textAlign = TextAlign.Center,
+                      maxLines = 2,
+                      overflow = TextOverflow.Ellipsis
+                    )
+                  }
+                }
+              }
               if (track != null) {
-                Text(track.title, style = MaterialTheme.typography.labelMedium,
-                  textAlign = TextAlign.Center, maxLines = 4, overflow = TextOverflow.Ellipsis)
-                if (track.artist.isNotBlank()) {
-                  Text(track.artist, style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Box(
+                  modifier = Modifier.align(Alignment.BottomStart)
+                    .background(Color.Black.copy(alpha = 0.72f), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
+                  Text(
+                    text = formatSlotTime(remainingMillis),
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    lineHeight = 12.sp
+                  )
                 }
               }
             }
@@ -300,6 +357,13 @@ fun SlotsScreen(
 }
 
 private fun slotKey(index: Int) = "slot_${index + 1}"
+private fun slotDurationKey(index: Int) = "slot_duration_${index + 1}"
+private fun formatSlotTime(milliseconds: Long): String {
+  val totalSeconds = milliseconds.coerceAtLeast(0L) / 1000L
+  val minutes = totalSeconds / 60L
+  val seconds = totalSeconds % 60L
+  return "%02d:%02d".format(minutes, seconds)
+}
 private const val SLOTS_PREFERENCES = "independent_slots"
 private const val SLOT_COUNT = 20
 private const val SLOT_LONG_PRESS_MS = 4000L
