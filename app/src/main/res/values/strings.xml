@@ -53,6 +53,9 @@
   <string name="drawer_section_music">MUSIC</string>
   <string name="drawer_version">Version %1$s</string>
   <string name="nav_queue">Queue</string>
+  <string name="nav_slots">Slots</string>
+  <string name="slots_add_tracks">Add tracks from Library</string>
+  <string name="slots_empty">Slots is empty. Tap “Add tracks from Library” to build your own list.</string>
   <string name="nav_help">Help &amp; Feedback</string>
   <string name="nav_now_playing">Now playing</string>
   <string name="nav_playlists">Playlists</string>
