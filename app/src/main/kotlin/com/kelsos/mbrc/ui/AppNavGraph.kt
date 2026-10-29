@@ -275,6 +275,8 @@ fun AppNavGraph(
       SlotsScreen(
         onOpenDrawer = onOpenDrawer,
         onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
+        onNavigateToQueue = { navController.navigateFrom(entry, Screen.NowPlayingList.route) },
+        onNavigateToLibrary = { navController.navigateFrom(entry, Screen.Library.route) },
         snackbarHostState = snackbarHostState
       )
     }
