@@ -247,7 +247,9 @@ fun AppNavGraph(
         pendingRemovePath = pendingRemovePath,
         onPendingRemoveComplete = {
           navController.previousBackStackEntry?.savedStateHandle?.remove<String>("pendingRemovePath")
-          navController.popBackStack()
+          // Return explicitly to the main player after removal, even if navigation
+          // has accumulated intermediate destinations.
+          navController.popBackStack(Screen.Home.route, inclusive = false)
         },
         onNavigateToAlbum = { path ->
           // The repository lookup runs before the navigate, so this one can resolve long after
