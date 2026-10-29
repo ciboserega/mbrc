@@ -23,6 +23,7 @@ import com.kelsos.mbrc.feature.library.compose.drilldown.GenreAlbumsScreen
 import com.kelsos.mbrc.feature.library.compose.drilldown.GenreArtistsScreen
 import com.kelsos.mbrc.feature.misc.help.compose.HelpFeedbackScreen
 import com.kelsos.mbrc.feature.playback.nowplaying.compose.NowPlayingScreen
+import com.kelsos.mbrc.feature.playback.nowplaying.compose.SlotsScreen
 import com.kelsos.mbrc.feature.playback.player.compose.PlayerScreen
 import com.kelsos.mbrc.feature.settings.compose.AppLicenseScreen
 import com.kelsos.mbrc.feature.settings.compose.ConnectionManagerScreen
@@ -266,6 +267,14 @@ fun AppNavGraph(
       )
     }
 
+    composable(Screen.Slots.route) { entry ->
+      SlotsScreen(
+        onOpenDrawer = onOpenDrawer,
+        onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
+        snackbarHostState = snackbarHostState
+      )
+    }
+
     composable(Screen.ConnectionManager.route) {
       ConnectionManagerScreen(
         snackbarHostState = snackbarHostState,
@@ -332,6 +341,7 @@ sealed class Screen(val route: String) {
 
   // Screens without arguments
   data object NowPlayingList : Screen("now_playing_list")
+  data object Slots : Screen("slots")
   data object ConnectionManager : Screen("connection_manager")
   data object Licenses : Screen("licenses")
   data object AppLicense : Screen("app_license")
@@ -373,6 +383,7 @@ val drawerScreens = listOf(
   Screen.Home,
   Screen.Library,
   Screen.Playlists,
+  Screen.Slots,
   Screen.Radio,
   Screen.Settings,
   Screen.Help
