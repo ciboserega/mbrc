@@ -70,6 +70,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
+import timber.log.Timber
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -331,22 +332,26 @@ fun PlayerScreenContent(
   // do not cancel the remaining two scheduled Stop commands.
   val stopCommandScope = rememberCoroutineScope()
 
-  // Keep observing the playback clock for the whole track. Restarting this effect on
-  // every position update can repeatedly cancel the check right at the end boundary.
-  // When mode "1" is active, send Stop at 1.5s, 1.0s and 0.5s before the end.
+  // Observe the clock continuously. Trigger slightly before the requested 1.5s window
+  // so a delayed/coarse MusicBee position update cannot skip the threshold.
   LaunchedEffect(stopAfterCurrentTrack, playingTrack.path) {
     if (!stopAfterCurrentTrack || playingTrack.path.isBlank()) return@LaunchedEffect
 
     snapshotFlow {
-      Triple(playingPosition.current, playingPosition.total, playbackState.playerState)
-    }.collect { (current, total, state) ->
+      playingPosition.current to playingPosition.total
+    }.collect { (current, total) ->
+      val remaining = total - current
       if (
-        state == PlayerState.Playing &&
         total > 0 &&
-        current >= total - PlayerConstants.STOP_BEFORE_END_MS &&
+        current >= 0 &&
+        remaining in 0..(PlayerConstants.STOP_BEFORE_END_MS + 1500L) &&
         stopRequestedForTrack != playingTrack.path
       ) {
         stopRequestedForTrack = playingTrack.path
+        Timber.d(
+          "Stop-on-end triggered: track=%s current=%d total=%d remaining=%d",
+          playingTrack.path, current, total, remaining
+        )
         stopCommandScope.launch {
           actions.stop()
           delay(500)
