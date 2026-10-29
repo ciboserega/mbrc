@@ -957,6 +957,7 @@ private fun QueuePreview(
   onTrackClick: (Int) -> Unit,
   onGoToArtist: (String) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   onNavigateToLibrarySearch: () -> Unit,
   onRequestRemoveTrack: (String) -> Unit,
   modifier: Modifier = Modifier
