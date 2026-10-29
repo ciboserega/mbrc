@@ -982,16 +982,6 @@ fun NowPlayingTrackItem(
       ),
       shape = RoundedCornerShape(28.dp)
     ) {
-      if (onGoToAlbum != null) {
-        DropdownMenuItem(
-          text = { Text(stringResource(R.string.player_go_to_album)) },
-          leadingIcon = { Icon(Icons.Default.Album, contentDescription = null) },
-          onClick = {
-            showMenu = false
-            onGoToAlbum()
-          }
-        )
-      }
       DropdownMenuItem(
         text = {
           Text(
