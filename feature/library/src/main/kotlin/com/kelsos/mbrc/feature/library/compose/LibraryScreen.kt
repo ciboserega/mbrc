@@ -69,6 +69,7 @@ fun LibraryScreen(
   onNavigateToAlbumTracks: (Album) -> Unit,
   onNavigateToPlayer: () -> Unit,
   onNavigateToQueue: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   snackbarHostState: SnackbarHostState,
   modifier: Modifier = Modifier,
   viewModel: LibraryViewModel = koinViewModel(),
@@ -219,6 +220,8 @@ fun LibraryScreen(
         .padding(end = 16.dp, bottom = 314.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
+      LibraryShortcutButton(label = "S", onClick = onNavigateToSlots)
+      Spacer(modifier = Modifier.height(12.dp))
       LibraryShortcutButton(label = "Q", onClick = onNavigateToQueue)
       Spacer(modifier = Modifier.height(12.dp))
       LibraryShortcutButton(iconPlay = true, onClick = onNavigateToPlayer)
