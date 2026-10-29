@@ -141,6 +141,7 @@ import org.koin.compose.koinInject
 fun PlayerScreen(
   onNavigateToLibrarySearch: () -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   onRequestRemoveTrack: (String) -> Unit,
   onNavigateToAlbum: (album: String, artist: String) -> Unit,
   onNavigateToArtist: (artist: String) -> Unit,
@@ -252,6 +253,7 @@ fun PlayerScreen(
         queueTracks = queueTracks,
         onQueueTrackClick = { position -> queueViewModel.actions.play(position) },
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToSlots = onNavigateToSlots,
         onRequestRemoveTrack = onRequestRemoveTrack,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
@@ -303,6 +305,7 @@ fun PlayerScreenContent(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   onRequestRemoveTrack: (String) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
@@ -398,6 +401,7 @@ fun PlayerScreenContent(
         queueTracks = queueTracks,
         onQueueTrackClick = onQueueTrackClick,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToSlots = onNavigateToSlots,
         onRequestRemoveTrack = onRequestRemoveTrack,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
@@ -426,6 +430,7 @@ fun PlayerScreenContent(
         queueTracks = queueTracks,
         onQueueTrackClick = onQueueTrackClick,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToSlots = onNavigateToSlots,
         onRequestRemoveTrack = onRequestRemoveTrack,
         onNavigateToArtist = onNavigateToArtist,
         playingPosition = playingPosition,
@@ -639,6 +644,7 @@ private fun PortraitPlayerLayout(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   onRequestRemoveTrack: (String) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
@@ -691,6 +697,7 @@ private fun PortraitPlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToSlots = onNavigateToSlots,
         onNavigateToLibrarySearch = onTrackInfoClick,
         onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
@@ -792,6 +799,7 @@ private fun LandscapePlayerLayout(
   queueTracks: LazyPagingItems<NowPlaying>,
   onQueueTrackClick: (Int) -> Unit,
   onNavigateToNowPlaying: () -> Unit,
+  onNavigateToSlots: () -> Unit,
   onRequestRemoveTrack: (String) -> Unit,
   onNavigateToArtist: (String) -> Unit,
   playingPosition: PlayingPosition,
@@ -842,6 +850,7 @@ private fun LandscapePlayerLayout(
         onTrackClick = onQueueTrackClick,
         onGoToArtist = onNavigateToArtist,
         onNavigateToNowPlaying = onNavigateToNowPlaying,
+        onNavigateToSlots = onNavigateToSlots,
         onNavigateToLibrarySearch = onTrackInfoClick,
         onRequestRemoveTrack = onRequestRemoveTrack,
         modifier = Modifier
@@ -1035,6 +1044,28 @@ private fun QueuePreview(
           }
         }
       }
+      }
+      Surface(
+        modifier = Modifier
+          .align(Alignment.BottomEnd)
+          .padding(end = 16.dp, bottom = 152.dp)
+          .size(56.dp)
+          .border(2.dp, Color.LightGray.copy(alpha = 0.45f), CircleShape)
+          .clip(CircleShape)
+          .clickable(onClick = onNavigateToSlots),
+        shape = CircleShape,
+        color = Color.DarkGray.copy(alpha = 0.72f),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+      ) {
+        Box(contentAlignment = Alignment.Center) {
+          Text(
+            text = "S",
+            color = Color.LightGray,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+          )
+        }
       }
       Surface(
         modifier = Modifier
