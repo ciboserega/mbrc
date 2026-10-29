@@ -135,7 +135,7 @@ fun SlotsScreen(
   }
   val searchResults = searchFlow.collectAsLazyPagingItems()
   val baseViewConfiguration = LocalViewConfiguration.current
-  val fourSecondLongPressConfiguration = remember(baseViewConfiguration) {
+  val twoSecondLongPressConfiguration = remember(baseViewConfiguration) {
     object : ViewConfiguration by baseViewConfiguration {
       override val longPressTimeoutMillis: Long = SLOT_LONG_PRESS_MS
     }
@@ -149,16 +149,16 @@ fun SlotsScreen(
     actionItems = emptyList(),
     menuItems = emptyList()
   ) { padding ->
-    androidx.compose.runtime.CompositionLocalProvider(LocalViewConfiguration provides fourSecondLongPressConfiguration) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalViewConfiguration provides twoSecondLongPressConfiguration) {
       Box(modifier = Modifier.fillMaxSize().padding(padding)) {
       LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(3),
         modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
         contentPadding = PaddingValues(top = 10.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
       ) {
-        items((0 until SLOT_COUNT).toList(), key = { it }) { index ->
+        items((0 until SLOT_VISIBLE_COUNT).toList(), key = { it }) { index ->
           val track = slotTracks[index]
           val isPlaying = track != null && track.src == currentTrack.path &&
             playbackState.playerState == PlayerState.Playing
@@ -168,10 +168,10 @@ fun SlotsScreen(
             slotDurations[index]
           }
           Surface(
-            modifier = Modifier.fillMaxWidth().aspectRatio(0.82f).combinedClickable(
+            modifier = Modifier.fillMaxWidth().aspectRatio(1.0f).combinedClickable(
               onClick = {
                 if (track == null) {
-                  scope.launch { snackbarHostState.showSnackbar("Hold a slot for 4 seconds to assign a track") }
+                  scope.launch { snackbarHostState.showSnackbar("Hold a slot for 2 seconds to assign a track") }
                 } else {
                   scope.launch {
                     if (track.src == currentTrack.path && playbackState.playerState == PlayerState.Playing) {
@@ -223,7 +223,7 @@ fun SlotsScreen(
                 if (track != null) {
                   Text(
                     text = track.title,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 14.sp),
                     color = if (isPlaying) Color(0xFF292522) else Color.White,
                     textAlign = TextAlign.Center,
                     maxLines = 4,
@@ -232,7 +232,7 @@ fun SlotsScreen(
                   if (track.artist.isNotBlank()) {
                     Text(
                       text = track.artist,
-                      style = MaterialTheme.typography.labelSmall,
+                      style = MaterialTheme.typography.labelSmall.copy(fontSize = 13.sp),
                       color = if (isPlaying) Color(0xFF51473F) else Color(0xFFD0D0D0),
                       textAlign = TextAlign.Center,
                       maxLines = 2,
@@ -371,7 +371,8 @@ private fun formatSlotTime(milliseconds: Long): String {
 }
 private const val SLOTS_PREFERENCES = "independent_slots"
 private const val SLOT_COUNT = 20
-private const val SLOT_LONG_PRESS_MS = 4000L
+private const val SLOT_VISIBLE_COUNT = 15
+private const val SLOT_LONG_PRESS_MS = 2000L
 
 
 @Composable
