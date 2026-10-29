@@ -140,7 +140,6 @@ fun SlotsScreen(
                         userActionUseCase.perform(com.kelsos.mbrc.core.networking.protocol.actions.UserAction(
                           com.kelsos.mbrc.core.networking.protocol.base.Protocol.PlayerStop, true
                         ))
-                        userActionUseCase.playTrack(result.position)
                         activeSlot = null
                       } else {
                         userActionUseCase.playTrack(result.position)
@@ -167,10 +166,7 @@ fun SlotsScreen(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally
             ) {
-              if (track == null) {
-                Text((index + 1).toString(), style = MaterialTheme.typography.labelSmall,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant)
-              } else {
+              if (track != null) {
                 Text(track.title, style = MaterialTheme.typography.labelMedium,
                   textAlign = TextAlign.Center, maxLines = 4, overflow = TextOverflow.Ellipsis)
                 if (track.artist.isNotBlank()) {
