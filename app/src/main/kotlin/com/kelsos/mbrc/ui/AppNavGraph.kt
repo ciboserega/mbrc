@@ -240,6 +240,7 @@ fun AppNavGraph(
         onOpenDrawer = onOpenDrawer,
         onNavigateToLibrarySearch = { navController.navigateFrom(entry, Screen.LibrarySearch.route) },
         onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
+        onNavigateToSlots = { navController.navigateFrom(entry, Screen.Slots.route) },
         pendingRemovePath = pendingRemovePath,
         onPendingRemoveComplete = {
           navController.previousBackStackEntry?.savedStateHandle?.remove<String>("pendingRemovePath")
@@ -321,6 +322,7 @@ private fun LibraryDestination(
     },
     onNavigateToPlayer = { navController.navigateFrom(entry, Screen.Home.route) },
     onNavigateToQueue = { navController.navigateFrom(entry, Screen.NowPlayingList.route) },
+    onNavigateToSlots = { navController.navigateFrom(entry, Screen.Slots.route) },
     snackbarHostState = snackbarHostState
   )
 }
