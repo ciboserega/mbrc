@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.kelsos.mbrc.feature.playback.R
 import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.settings.TrackSortField
 import com.kelsos.mbrc.core.data.library.track.Track
@@ -86,9 +87,9 @@ fun SlotsScreen(
     }
   }
 
-  val title = stringResource(com.kelsos.mbrc.R.string.nav_slots)
-  val addTrackLabel = stringResource(com.kelsos.mbrc.R.string.slots_add_tracks)
-  val emptyLabel = stringResource(com.kelsos.mbrc.R.string.slots_empty)
+  val title = stringResource(R.string.nav_slots)
+  val addTrackLabel = stringResource(R.string.slots_add_tracks)
+  val emptyLabel = stringResource(R.string.slots_empty)
   val topBar = TopBarState.WithTitle(title)
 
   DynamicScreenScaffold(
@@ -187,7 +188,7 @@ fun SlotsScreen(
                 slotPaths.removeAt(index)
                 persistSlots(preferences, slotPaths)
               }) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(com.kelsos.mbrc.R.string.menu_remove_track))
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.menu_remove_track))
               }
             }
           }
