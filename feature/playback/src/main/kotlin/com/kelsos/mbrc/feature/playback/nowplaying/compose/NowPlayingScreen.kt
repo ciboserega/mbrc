@@ -986,7 +986,7 @@ fun NowPlayingTrackItem(
         text = {
           Text(
             text = stringResource(R.string.menu_remove_track),
-            fontSize = MaterialTheme.typography.bodyLarge.fontSize + 2.sp,
+            fontSize = (MaterialTheme.typography.bodyLarge.fontSize.value + 2f).sp,
             color = Color(0xFFFF8A80)
           )
         },
