@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, development]
   push:
-    branches: ["feature/protocol-v6-*"]
+    branches: ["feature/protocol-v6-*", "feature/cibo-v6-latest"]
   workflow_dispatch:
 
 permissions:
