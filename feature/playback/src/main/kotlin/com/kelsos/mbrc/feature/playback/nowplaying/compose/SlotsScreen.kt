@@ -48,9 +48,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.stringResource
@@ -72,6 +75,7 @@ import com.kelsos.mbrc.core.networking.dto.QueuePayload
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
 import com.kelsos.mbrc.core.networking.protocol.usecases.stop
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
@@ -100,6 +104,17 @@ fun SlotsScreen(
   val slotTracks = remember { mutableStateListOf<Track?>().apply { repeat(SLOT_COUNT) { add(null) } } }
   var slotToAssign by remember { mutableStateOf<Int?>(null) }
   var searchText by remember { mutableStateOf("") }
+  val searchFocusRequester = remember { FocusRequester() }
+  val keyboardController = LocalSoftwareKeyboardController.current
+
+  LaunchedEffect(slotToAssign) {
+    if (slotToAssign != null) {
+      // Wait for AlertDialog and its search field to enter composition before requesting focus.
+      delay(250)
+      searchFocusRequester.requestFocus()
+      keyboardController?.show()
+    }
+  }
   val playerViewModel: PlayerViewModel = koinViewModel()
   val currentTrack by playerViewModel.playingTrack.collectAsStateWithLifecycle()
   val playingPosition by playerViewModel.playingPosition.collectAsStateWithLifecycle()
@@ -299,7 +314,7 @@ fun SlotsScreen(
               onValueChange = { searchText = it },
               singleLine = true,
               textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-              modifier = Modifier.fillMaxWidth().padding(12.dp),
+              modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester).padding(12.dp),
               decorationBox = { inner ->
                 if (searchText.isBlank()) {
                   Text("Search Library…", color = MaterialTheme.colorScheme.onSurfaceVariant)
