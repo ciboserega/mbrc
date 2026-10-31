@@ -61,6 +61,11 @@
   <string name="output_selection__no_devices">No output devices found</string>
   <string name="output_selection_title">Select Output</string>
 
+  <!-- Tempo / pitch (UI groundwork; server support required) -->
+  <string name="player_pitch_label">Pitch (semitones)</string>
+  <string name="player_tempo_label">Tempo (playback speed)</string>
+  <string name="player_tempo_pitch_requires_server">Tempo and pitch control require an updated MusicBee server plugin.</string>
+
   <!-- Player -->
   <string name="player_go_to_album">Go to Album</string>
   <string name="player_go_to_artist">Go to Artist</string>
