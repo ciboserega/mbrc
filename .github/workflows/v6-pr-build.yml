@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, development]
   push:
-    branches: ["feature/protocol-v6-*", "feature/cibo-v6-latest"]
+    branches: ["feature/protocol-v6-*", "feature/cibo-v6-latest", "feature/tempo-pitch-panels-wip"]
   workflow_dispatch:
 
 permissions:
